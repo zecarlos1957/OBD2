@@ -1,0 +1,10 @@
+*.hex
+*.o
+*.err
+*.lst
+*.cof
+*.map
+*.mcs
+*.mcw
+*.sbs
+

@@ -1,0 +1,108 @@
+## SCL Builder Setup File: Do not edit!!
+
+## VERSION: 3.60.00.00
+## FORMAT:  v2.00.01
+## DEVICE:  PIC16F876A
+
+## PINREGACTIONS
+cyc
+No Repeat
+PORTB
+PIR1.SSPIF
+--
+&
+## ADVPINREGACTIONS
+PORTB
+PIR1.SSPIF
+--
+1
+COND1
+1x
+
+
+FF
+
+--
+1
+COND2
+Cont
+2
+cyc
+
+1
+--
+&
+--
+COND1
+Any
+
+
+
+
+
+
+--
+COND2
+SFR
+PC
+=
+WaitSPIExchange
+
+
+
+--
+&
+## CLOCK
+&
+## STIMULUSFILE
+&
+## RESPONSEFILE
+&
+## ASYNCH
+Pin
+RB0
+Pulse Low
+1 cyc
+MCP2515_INT
+-1
+--
+Pin
+RB1
+Pulse Low
+1 ms
+Left
+3
+--
+Pin
+RB2
+Pulse Low
+1 ms
+Up
+3
+--
+Pin
+RB3
+Pulse Low
+1 ms
+Right
+3
+--
+Pin
+RB4
+Pulse Low
+1 ms
+Down
+3
+--
+Pin
+RB5
+Pulse Low
+1 ms
+Enter
+3
+--
+&
+## ADVANCEDSCL
+
+1
+&

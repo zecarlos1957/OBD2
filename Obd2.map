@@ -1,0 +1,315 @@
+MPLINK 4.37, Linker
+Linker Map File - Created Thu Aug 09 17:59:36 2018
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000004
+                   .cinit    romdata   0x000002    program   0x000004
+                   .org_1       code   0x000004    program   0x0003de
+                   .org_2       code   0x000300    program   0x00014e
+                   .org_3       code   0x000400    program   0x0006f4
+                  .idlocs       code   0x002000    program   0x000008
+      .config_2007_OBD2.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x0001f2      
+                            0x000300    0x0003a6      
+                            0x000400    0x000779      
+                            0x002000    0x002003      
+                            0x002007    0x002007      
+            1561 out of 8453 program addresses used, program memory utilization is 18%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                    AdjFw   0x0005a2    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   AdjRew   0x000589    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               BitMod2510   0x0000b9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                CfgExMask   0x000600    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  CfgFunc   0x000556    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               CfgSTDMask   0x0005e7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              CheckCANMsg   0x00001f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              ExchangeSPI   0x000121    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            Get2510Status   0x00009a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              GetSRegAddr   0x000300    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               GetStrAddr   0x000313    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                HardStart   0x000149    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Init   0x0001bd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    Init1   0x000508    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               Init2510aa   0x0000dd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                   InitIO   0x0001d9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               InitSPIBuf   0x000107    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              InitSPIPort   0x0000d4    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                IntReturn   0x000015    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   IntSPI   0x000136    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 Key_Down   0x0005a8    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                Key_Enter   0x0005d5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 Key_Left   0x000583    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                Key_Right   0x00059a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   Key_Up   0x0005be    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDText   0x000642    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCD_Hex   0x000653    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+            LCD_RegString   0x000631    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   LCDclk   0x000737    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDcomd   0x00073f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDdata   0x000741    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDinit   0x00074d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval08   0x000680    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval16   0x000691    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval32   0x0006b3    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDxmit   0x000730    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              LoadSPIByte   0x000115    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             LoadSPIZeros   0x000118    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              MCP2515_ISR   0x000131    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 ParseCAN   0x0001aa    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 ParseKey   0x00017a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                ParseKey1   0x000196    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              ProccessSPI   0x00010c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                Rd2510Reg   0x0000a2    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                  Refresh   0x000564    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 RegNames   0x000400    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                Reset2510   0x0000ce    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                  Rts2510   0x0000c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              Set2510Mode   0x00007a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetConfigMode   0x000054    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetListenMode   0x000086    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+          SetLoopBackMode   0x00006d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetNormalMode   0x000061    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                     Str0   0x00031f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str1   0x000329    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str2   0x000338    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str3   0x00034d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str4   0x000355    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str5   0x000362    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str6   0x00036e    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str7   0x00037c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str8   0x000389    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str9   0x000396    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  Strings   0x00031e    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               WaitANDeqZ   0x000093    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                 WaitMSec   0x0001e6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+          WaitSPIExchange   0x00012d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               Wrt2510Reg   0x0000ae    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                   _Hex08   0x000671    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  _LCD_wr   0x000742    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V08_1   0x0006dd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V08_H   0x000673    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V08_LCD   0x0006e5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V16_1   0x0006eb    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V16_2   0x0006f5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V16_LCD   0x0006fe    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V32_1   0x000704    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V32_2   0x00071a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V32_LCD   0x00072b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _VALcnv08   0x0006db    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _VALcnv16   0x0006ea    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _VH8_LCD   0x00067b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _Valcnv32   0x000703    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   brdone   0x000526    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  del_20m   0x000770    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   del_2u   0x000772    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 delay_ms   0x00076f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     done   0x000641    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    done1   0x000652    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    getCH   0x000660    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               getRegAddr   0x000570    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+            jCANFrameData   0x000549    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jInitClr1   0x0001c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jInitClr2   0x0001cc    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 jIntSPI2   0x000140    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jIntTimer0   0x000144    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jIntTimer1   0x000146    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jMainLoop   0x000164    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  jRecStd   0x000175    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 jRxChk11   0x00003d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                 jRxChk90   0x00004c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               jSendFrame   0x0004fd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jSet2510M1   0x00007f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetConfigM1   0x00005a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetListenM1   0x00008c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+           jSetLoopBackM1   0x000073    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetNormalM1   0x000067    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                jStdFrame   0x000036    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              jWaitANDeqZ   0x000094    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               jWaitMSec0   0x0001e7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jWaitMSec1   0x0001eb    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     jlow   0x00051a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     next   0x000637    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    next1   0x00064a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              normal_func   0x00058f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                       p1   0x000154    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg0   0x000401    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg1   0x00040f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg10   0x00048d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg11   0x00049b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg12   0x0004a9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg13   0x0004b7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg14   0x0004c5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg15   0x0004d3    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg16   0x0004e1    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg17   0x0004ef    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg2   0x00041d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg3   0x00042b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg4   0x000439    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg5   0x000447    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg6   0x000455    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg7   0x000463    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg8   0x000471    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg9   0x00047f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    waitK   0x00017f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   waitK1   0x00019b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  wrmode3   0x0005af    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  wrmode4   0x0005c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                IntReturn   0x000015    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              CheckCANMsg   0x00001f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                jStdFrame   0x000036    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                 jRxChk11   0x00003d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                 jRxChk90   0x00004c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetConfigMode   0x000054    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetConfigM1   0x00005a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetNormalMode   0x000061    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetNormalM1   0x000067    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+          SetLoopBackMode   0x00006d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+           jSetLoopBackM1   0x000073    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              Set2510Mode   0x00007a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               jSet2510M1   0x00007f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            SetListenMode   0x000086    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             jSetListenM1   0x00008c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               WaitANDeqZ   0x000093    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              jWaitANDeqZ   0x000094    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+            Get2510Status   0x00009a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                Rd2510Reg   0x0000a2    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               Wrt2510Reg   0x0000ae    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               BitMod2510   0x0000b9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                  Rts2510   0x0000c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+                Reset2510   0x0000ce    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              InitSPIPort   0x0000d4    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               Init2510aa   0x0000dd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+               InitSPIBuf   0x000107    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              ProccessSPI   0x00010c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              LoadSPIByte   0x000115    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+             LoadSPIZeros   0x000118    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              ExchangeSPI   0x000121    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+          WaitSPIExchange   0x00012d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\can_lib.asm
+              MCP2515_ISR   0x000131    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   IntSPI   0x000136    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 jIntSPI2   0x000140    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jIntTimer0   0x000144    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jIntTimer1   0x000146    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                HardStart   0x000149    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                       p1   0x000154    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jMainLoop   0x000164    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  jRecStd   0x000175    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 ParseKey   0x00017a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    waitK   0x00017f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                ParseKey1   0x000196    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   waitK1   0x00019b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 ParseCAN   0x0001aa    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Init   0x0001bd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jInitClr1   0x0001c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                jInitClr2   0x0001cc    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   InitIO   0x0001d9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 WaitMSec   0x0001e6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jWaitMSec0   0x0001e7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jWaitMSec1   0x0001eb    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              GetSRegAddr   0x000300    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               GetStrAddr   0x000313    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  Strings   0x00031e    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str0   0x00031f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str1   0x000329    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str2   0x000338    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str3   0x00034d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str4   0x000355    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str5   0x000362    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str6   0x00036e    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str7   0x00037c    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str8   0x000389    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     Str9   0x000396    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 RegNames   0x000400    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg0   0x000401    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg1   0x00040f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg2   0x00041d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg3   0x00042b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg4   0x000439    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg5   0x000447    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg6   0x000455    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg7   0x000463    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg8   0x000471    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     reg9   0x00047f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg10   0x00048d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg11   0x00049b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg12   0x0004a9    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg13   0x0004b7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg14   0x0004c5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg15   0x0004d3    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg16   0x0004e1    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    reg17   0x0004ef    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               jSendFrame   0x0004fd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    Init1   0x000508    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     jlow   0x00051a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   brdone   0x000526    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+            jCANFrameData   0x000549    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  CfgFunc   0x000556    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  Refresh   0x000564    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               getRegAddr   0x000570    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 Key_Left   0x000583    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   AdjRew   0x000589    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+              normal_func   0x00058f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                Key_Right   0x00059a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    AdjFw   0x0005a2    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 Key_Down   0x0005a8    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  wrmode3   0x0005af    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   Key_Up   0x0005be    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  wrmode4   0x0005c6    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                Key_Enter   0x0005d5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+               CfgSTDMask   0x0005e7    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                CfgExMask   0x000600    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+            LCD_RegString   0x000631    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     next   0x000637    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                     done   0x000641    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDText   0x000642    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    next1   0x00064a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    done1   0x000652    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCD_Hex   0x000653    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                    getCH   0x000660    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _Hex08   0x000671    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V08_H   0x000673    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _VH8_LCD   0x00067b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval08   0x000680    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval16   0x000691    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 LCDval32   0x0006b3    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _VALcnv08   0x0006db    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V08_1   0x0006dd    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V08_LCD   0x0006e5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _VALcnv16   0x0006ea    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V16_1   0x0006eb    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V16_2   0x0006f5    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V16_LCD   0x0006fe    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                _Valcnv32   0x000703    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V32_1   0x000704    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   _V32_2   0x00071a    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 _V32_LCD   0x00072b    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDxmit   0x000730    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   LCDclk   0x000737    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDcomd   0x00073f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDdata   0x000741    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  _LCD_wr   0x000742    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  LCDinit   0x00074d    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                 delay_ms   0x00076f    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                  del_20m   0x000770    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+                   del_2u   0x000772    program     static C:\Documents and Settings\Jose\Os meus documentos\Projects\MicroChip\OBD2\OBD2.asm
+
+
