@@ -12,14 +12,11 @@
 ;        MCP2551  CAN Transceiver
 ;        MAX232   USART data manager
 ;                                                                     *
-;  10 MHz Osc                                                         *
+;  4 MHz Osc                                                         *
 ;                                                                     *
 ;                                                                     *
 ;                                                                     *
 ;                                                                     *
-; Tosc = (1/10 MHz)   = 0.0000001s = 100ns                            *
-; 1 instruction  = TOsc * 4 = 400ns                                   *
-;
 ; Tosc = (1/4  MHz)   = 0.00000025s = 250ns                           *
 ; 1 instruction  = TOsc * 4 = 1us                                     *
 ;
