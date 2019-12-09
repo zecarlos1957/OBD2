@@ -376,8 +376,9 @@ jSetNormalM1
 ;// Function Name: Set_LoopBack_Mode() 
 ;********************************************************** 
 SetLoopBackMode 
-          bL2bV     0x40,b2510RegData 
+ 
           bL2bV     0xE0,b2510RegMask 
+          bL2bV     0x40,b2510RegData 
           movlw     CANCTRL 
           call      BitMod2510 
  
@@ -385,25 +386,8 @@ jSetLoopBackM1
           movlw     CANSTAT 
           call      Rd2510Reg 
           andlw     0xE0 
-          xorlw     0x40  
+          xorlw     0x40 
           jmpNZ     jSetLoopBackM1 
- 
-          return 
-
-;**************************************************
-
-Set2510Mode 
-          movwf     b2510RegData
-          bL2bV     0xE0,b2510RegMask 
-          movlw     CANCTRL 
-          call      BitMod2510 
- 
-jSet2510M1 
-          movlw     CANSTAT 
-          call      Rd2510Reg 
-          andlw     0xE0 
-          xorlw     b2510RegData  
-          jmpNZ     jSet2510M1 
  
           return 
 
@@ -685,8 +669,7 @@ Init2510aa
     call Wrt2510Reg
 
   ;    call SetNormalMode
-     movlw 0x40
-     call Set2510Mode
+     call SetLoopBackMode
   ;   call SetListenMode
 
     return
@@ -782,10 +765,7 @@ ExchangeSPI
 ;         Wait for SPI transaction to be completed. 
 ;********************************************************** 
 WaitSPIExchange 
-  ;      bsf INTCON,GIE
-  ;      nop
-  ;      nop
-  ;      bcf INTCON,GIE
+        nop
         movf    bSPICnt,F 
         btfss   _Z 
         goto    WaitSPIExchange 

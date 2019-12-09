@@ -1,0 +1,2853 @@
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;**********************************************************************
+                      00002 ;  Filename: OBD2                                                     *
+                      00003 ;  Uses PIC16F876A                                                    *
+                      00004 ;  Date: 13.05.2018                                                   *
+                      00005 ;  Author:  Jose Jesus                                                *
+                      00006 ;                                                                     *
+                      00007 ;  Uses:
+                      00008 ;        
+                      00009 ;                                                                     *
+                      00010 ;        RC2004A  20*4 Display interface
+                      00011 ;        MCP2515  CAN Controller
+                      00012 ;        MCP2551  CAN Transceiver
+                      00013 ;        MAX232   USART data manager
+                      00014 ;                                                                     *
+                      00015 ;  4 MHz Osc                                                         *
+                      00016 ;                                                                     *
+                      00017 ;                                                                     *
+                      00018 ;                                                                     *
+                      00019 ;                                                                     *
+                      00020 ; Tosc = (1/4  MHz)   = 0.00000025s = 250ns                           *
+                      00021 ; 1 instruction  = TOsc * 4 = 1us                                     *
+                      00022 ;
+                      00023 ;
+                      00024 ;                                                                     *
+                      00025 ;                                                                     *
+                      00026 ;**********************************************************************
+                      00027 ;                                                                     *
+                      00028 ;**********************************************************************
+                      00029 ;                                                                     *                                 
+                               
+                      00030 ;    Pin assignments:                                                 *                                 
+                               
+                      00031 ;     2 - RA0-0             = D7 Display                              *                                 
+                      00032 ;     3 - RA1-0             = D6 Display         
+                      00033 ;     4 - RA2-0             = D5 Display                              *                                 
+                             
+                      00034 ;     5 - RA3-0             = D4 Display                              *
+                      00035 ;     6 - RA4-0             = EN Display                              *
+                      00036 ;     7 - RA5-0             = RS Display                              *
+                      00037 ;    21 - RB0-1             =  INT CAN                             *
+                      00038 ;    22 - RB1-1             =  button left          !!                    *
+                      00039 ;    23 - RB2-1             =  button up                            *
+                      00040 ;    24 - RB3-1             =  Button right                             *
+                      00041 ;    25 - RB4-1             =  Button down                            *                                
+                      00042 ;    26 - RB5-1             =  Button enter                           *
+                      00043 ;        RB6   K in
+                      00044 ;        RB7   out CAN/ISO select
+                      00045 ;        RC0   K Line
+                      00046 ;        RC1   L Line
+                      00047 ;        RC2   CS
+                      00048 ;        RC3   SCK
+                      00049 ;        RC4   SI   
+                      00050 ;        RC5   SO
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00051 ;        RC6   TX
+                      00052 ;        RC7   RX   
+                      00053 ;
+                      00054 ;                                                                     *
+                      00055 ;                                                                     *
+                      00056 ;*************************************************************************
+                      00057 
+                      00058 
+                      00059  
+                      00060 
+                      00061 
+                      00062 
+                      00063 
+  00000001            00064 dVersion equ 1
+  00000000            00065 dRelease equ 0
+                      00066 
+                      00067 
+                      00068         PROCESSOR 16F876a
+                      00069     
+                      00070  
+                      00071     LIST r=dec, x=on, t=off  
+                      00072 
+                      00073         #include "p16f876a.inc"
+                      00001         LIST
+                      00002 ; P16F876A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                      00384         LIST
+                      00074     
+                      00075  
+                      00076 
+                      00077         ; embed Configuration Data within .asm File.
+2007   3F71           00078         __CONFIG   _WRT_OFF & _CPD_OFF & _CP_OFF &  _WDT_OFF & _LVP_OFF & _BODEN_ON & _PWRTE_ON & _XT_OS
+                            C 
+2000   0000 0001 0000 00079     __IDLOCS (dVersion<<8)|dRelease; version: vvrr; vv - version, rr - release
+       0000 
+                      00080 
+                      00081 
+                      00082 
+Warning[207]: Found label after column 1. (TMR_COUNT)
+  000000D9            00083     TMR_COUNT equ 0xd9
+                      00084 
+                      00085 
+                      00086        cblock 0x30
+  00000030            00087 temp
+  00000031            00088 baudRate
+  00000032            00089 tmr0
+  00000033            00090 SData
+  00000034            00091 count
+                      00092       endc
+                      00093 
+                      00094 
+                      00095 
+                      00096 
+                      00097        org 0x00
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00098     
+0000   0000           00099       nop     
+0001   2???           00100       goto main
+                      00101 
+                      00102        org 0x04
+                      00103      
+0004   2???           00104       goto isr
+                      00105 
+                      00106 
+                      00107 
+                      00108 
+0005                  00109 isr
+0005   0000           00110     nop
+Warning[207]: Found label after column 1. (iret)
+0006                  00111     iret
+                      00112 
+                      00113     #include "Lcd.inc"
+                      00001  
+                      00002 
+                      00003 
+                      00004 
+                      00005 
+                      00006 
+                      00007 
+                      00008 ;***** CONSTANT DECLARATION *****
+                      00009 
+  0020                00010         CONSTANT BASE = 0x20            ; base address of user file registers
+                      00011 
+                      00012 ;***** CONSTANT DECLARATION *****
+                      00013 
+                      00014         IFNDEF  LCDLINENUM      ; use default value, if unspecified
+                      00015 ;               CONSTANT LCDLINENUM = 0x02      ; by default, 2 lines
+                      00016                 CONSTANT LCDLINENUM = 0x04
+                      00017         ENDIF
+                      00018         IFNDEF  LCDTYPE         ; use default value, if unspecified
+                      00019         ;       CONSTANT LCDTYPE = 0x00         ; standard HD44780 LCD
+                      00020                 CONSTANT LCDTYPE = 0x01 ; EADIP204-4 (w/ KS0073)
+                      00021         ENDIF
+                      00022         IFNDEF  LCDSPEED        ; use default value, if unspecified
+                      00023                 ;CONSTANT LCDSPEED = 0x00       ; clk in [0..9] MHz
+                      00024                 CONSTANT LCDSPEED = 0x01        ; clk in [9..20] MHz, default
+                      00025         ENDIF
+                      00026         IFNDEF  LCDWAIT         ; use default value, if unspecified
+                      00027 ;               CONSTANT LCDWAIT = 0x01         ; for Tosc <= 5 MHz
+                      00028                 CONSTANT LCDWAIT = 0x04         ; for Tosc = 10 MHz
+                      00029         ENDIF
+                      00030         IFNDEF  LCDCLRWAIT      ; use default value, if unspecified
+                      00031                 CONSTANT LCDCLRWAIT = 0x08      ; wait after LCDCLR until LCD is ready again
+                      00032         ENDIF
+                      00033 
+                      00034 ;***** REGISTER DECLARATION *****
+                      00035 
+  00000020            00036 delay_mult      set     BASE+d'0'       ; wait cycle counter
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00037 
+  00000021            00038 LCDbuf  set     BASE+d'1'       ; LCD data buffer
+  00000022            00039 LCDtemp set     BASE+d'2'       ; LCD temporary register
+                      00040 
+                      00041            ; m_lcdv08
+  00000023            00042 LO      equ     BASE+d'3'
+  00000024            00043 HI      equ     BASE+d'4'
+  00000025            00044 LO_TEMP set     BASE+d'5'
+  00000026            00045 HI_TEMP set     BASE+d'6'
+                      00046 
+                      00047 
+  00000027            00048 TEMP1   equ     BASE+d'7'       ; Universal Temporary Register
+  00000028            00049 TEMP3   equ     BASE+d'8'
+  00000029            00050 TEMP2   equ     BASE+d'9'
+  0000002A            00051 TEMP4   equ     BASE+d'10'
+  0000002B            00052 TEMP5   equ     BASE+d'11'
+                      00053 
+  0000002C            00054 LCDFLAGreg      equ     BASE+d'12'
+                      00055 
+  0000002D            00056 STR_NUM equ BASE+d'13'
+  0000002E            00057 INDEX   equ BASE+d'14'
+                      00058 
+                      00059 
+                      00060         #define BCflag   LCDFLAGreg,0x05
+                      00061 
+                      00062 
+                      00063     #define delay_k50 TEMP4
+                      00064     #define delay_k200 TEMP5 
+                      00065 
+                      00066         ;*** LCD module versions for fixed ports (e.g. PortB) ***
+  00000085            00067 LCDtris equ     TRISA
+  00000005            00068 LCDport equ     PORTA
+                      00069 
+                      00070  
+                      00071     #define     LCD_EN     PORTA,0x04   ; Enable Output / "CLK"
+                      00072     #define     LCD_RS     PORTA,0x05   ; Register Select
+                      00073  
+                      00074 
+                      00075 
+                      00076 
+                      00077 ;***** LCD COMMANDS *****
+                      00078 
+                      00079   ;*** Standard LCD COMMANDS for INIT ***       ( HI-NIBBLE only )
+                      00080         ; for 4 bit mode: send only one nibble as high-nibble [DB7:DB4]
+  0003                00081         CONSTANT  LCDEM8  = b'0011'     ; entry mode set: 8 bit mode, 2 lines
+  0002                00082         CONSTANT  LCDEM4  = b'0010'     ; entry mode set: 4 bit mode, 2 lines
+  0008                00083         CONSTANT  LCDDZ   = b'1000'     ; set Display Data Ram Address to zero
+                      00084 
+                      00085   ;*** Standard LCD COMMANDS ***                ( HI- / LO-NIBBLE )
+                      00086         ; USE THESE COMMANDS BELOW AS FOLLOW: "LCDcmd LCDCLR"
+  0001                00087         CONSTANT  LCDCLR  = b'00000001' ; 0x01 clear display: resets address counter & cursor
+  0002                00088         CONSTANT  LCDCH   = b'00000010' ; 0x02 cursor home
+  0006                00089         CONSTANT  LCDCR   = b'00000110' ; 0x06 entry mode set: cursor moves right, display auto-shift of
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            f
+  0004                00090         CONSTANT  LCDCL   = b'00000100' ; 0x04 entry mode set: cursor moves left, display auto-shift off
+  000C                00091         CONSTANT  LCDCONT = b'00001100' ; 0x0C display control: display on, cursor off, blinking off
+  0010                00092         CONSTANT  LCDMCL  = b'00010000' ; 0x10 cursor/disp control: move cursor left
+  0014                00093         CONSTANT  LCDMCR  = b'00010100' ; 0x14 cursor/disp control: move cursor right
+  0018                00094         CONSTANT  LCDSL   = b'00011000' ; 0x18 cursor/disp control: shift display content left
+  001C                00095         CONSTANT  LCDSR   = b'00011100' ; 0x1C cursor/disp control: shift display content right
+  0028                00096         CONSTANT  LCD2L   = b'00101000' ; 0x28 function set: 4 bit mode, 2 lines, 5x7 dots
+                      00097         IF (LCDLINENUM == 0x2)
+                      00098           CONSTANT  LCDL1 = b'10000000' ; DDRAM address: 0x00, selects line 1 (2xXX LCD)
+                      00099           CONSTANT  LCDL2 = b'11000000' ; DDRAM address: 0x40, selects line 2 (2xXX LCD)
+                      00100           CONSTANT  LCDL3 = b'10010100' ; (DDRAM address: 0x14, fallback)
+                      00101           CONSTANT  LCDL4 = b'11010100' ; (DDRAM address: 0x54, fallback)
+                      00102         ELSE
+  0080                00103           CONSTANT  LCDL1 = b'10000000' ; DDRAM address: 0x00, selects line 1 (4xXX LCD)
+  00C0                00104           CONSTANT  LCDL2 = b'11000000' ; DDRAM address: 0x40, selects line 2 (4xXX LCD)
+  0094                00105           CONSTANT  LCDL3 = b'10010100' ; DDRAM address: 0x14, selects line 3 (4xXX LCD)
+  00D4                00106           CONSTANT  LCDL4 = b'11010100' ; DDRAM address: 0x54, selects line 4 (4xXX LCD)
+                      00107         ENDIF
+                      00108         ; special configuration for EA DIP204-4
+  0009                00109         CONSTANT  LCDEXT  = b'00001001' ; 0x09 extended function set EA DIP204-4
+  002C                00110         CONSTANT  LCD2L_A = b'00101100' ; 0x2C enter ext. function set: 4 bit mode, 2 lines, 5x7 dots
+  0028                00111         CONSTANT  LCD2L_B = b'00101000' ; 0x28 exit ext. function set: 4 bit mode, 2 lines, 5x7 dots
+                      00112 
+                      00113 
+                      00114 ;***** MACROS *****
+                      00115 
+                      00116 
+                      00117 
+Warning[207]: Found label after column 1. (LCD_Text)
+                      00118  LCD_Text macro LineN, TXMessage
+                      00119     LOCAL Message
+                      00120     LOCAL START
+                      00121     LOCAL EXIT
+                      00122     LOCAL I=0
+                      00123        goto START
+                      00124 Message dt TXMessage
+                      00125        dt 0
+                      00126 START
+                      00127     IF LineN==1
+                      00128         LCDcmd LCDL1
+                      00129     ELSE
+                      00130     IF LineN==2
+                      00131         LCDcmd LCDL2
+                      00132     ELSE
+                      00133     IF LineN==3
+                      00134         LCDcmd LCDL3
+                      00135     ELSE
+                      00136     IF LineN==4
+                      00137         LCDcmd LCDL4
+                      00138     ENDIF
+                      00139     ENDIF
+                      00140     ENDIF
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00141     ENDIF
+                      00142     WHILE I<20
+                      00143          call (Message+I)
+                      00144          addlw 0
+                      00145          bz EXIT
+                      00146          call LCDdata
+                      00147          I=I+1 
+                      00148     ENDW
+                      00149     EXIT
+                      00150     endm
+                      00151 
+                      00152 
+                      00153 LCDw    macro                   ; write content of w to LCD
+                      00154         call    LCDdata
+                      00155         endm
+                      00156 
+                      00157 LCDcmd  macro   LCDcommand      ; write command to LCD
+                      00158         movlw   LCDcommand
+                      00159         call    LCDcomd
+                      00160         endm
+                      00161 
+                      00162 
+                      00163 
+                      00164 LCD_DDAdr macro DDRamAddress
+                      00165         Local   value = DDRamAddress | b'10000000'      ; mask command
+                      00166         IF (DDRamAddress > 0x67)
+                      00167                 ERROR "Wrong DD-RAM-Address specified in LCD_DDAdr"
+                      00168         ELSE
+                      00169                 movlw   value
+                      00170                 call    LCDcomd
+                      00171         ENDIF
+                      00172         endm
+                      00173 
+                      00174 LCD_CGAdr macro CGRamAddress
+                      00175         Local   value = CGRamAddress | b'01000000'      ; mask command
+                      00176         IF (CGRamAddress > b'00111111')
+                      00177                 ERROR "Wrong CG-RAM-Address specified in LCD_CGAdr"
+                      00178         ELSE
+                      00179                 movlw   value
+                      00180                 call    LCDcomd
+                      00181         ENDIF
+                      00182         endm
+                      00183 
+                      00184 clrLCDport macro                ; clear/reset LCD data lines
+                      00185         movlw   b'11110000'     ; get mask
+                      00186         andwf   LCDport,f       ; clear data lines only
+                      00187         endm
+                      00188 
+                      00189 
+                      00190 
+                      00191 WAIT    macro   timeconst_1
+                      00192         IF (timeconst_1 != 0)
+                      00193             movlw       timeconst_1
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00194             call delay_ms
+                      00195         ENDIF
+                      00196         endm
+                      00197 
+                      00198 
+                      00199 
+                      00200 
+                      00201 
+                      00202 
+                      00203 
+                      00204 
+                      00205 
+                      00206 ;*****************************************************
+                      00207 
+                      00208 
+0006                  00209 LCD_String
+                      00210  
+0006   00AD           00211     movwf STR_NUM
+0007   30??           00212    movlw high GetStrAddr
+0008   008A           00213    movwf PCLATH
+0009   082D           00214    movf STR_NUM,W
+000A   2???           00215    call GetStrAddr
+000B   00AE           00216    movwf INDEX
+000C   30??           00217    movlw high Strings
+000D   008A           00218    movwf PCLATH
+000E                  00219 next1 
+000E   082E           00220     movf INDEX,W
+000F   2???           00221     call Strings
+0010   3E00           00222     addlw d'0'
+0011   1903           00223     btfsc STATUS,Z
+0012   2???           00224     goto done1
+                      00225   
+0013   2???           00226     call LCDdata
+0014   0AAE           00227     incf INDEX, F
+                      00228 
+0015   2???           00229     goto next1
+0016                  00230 done1
+                      00231 
+0016   0008           00232     return
+                      00233 
+                      00234 ;*****************************************************
+                      00235 
+0017                  00236 LCD_Hex
+0017   00A3           00237     movwf LO
+0018   00A5           00238     movwf LO_TEMP
+0019   12AC           00239     bcf BCflag
+001A   3010           00240     movlw 0x10
+001B   00A9           00241     movwf TEMP2
+001C   2???           00242     call _Hex08
+001D   2???           00243     call LCDdata
+001E   3001           00244     movlw 1
+001F   00A9           00245     movwf TEMP2
+0020   16AC           00246     bsf BCflag
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0021   2???           00247     call _Hex08
+0022   2???           00248     call LCDdata
+0023   0008           00249     return
+                      00250 
+                      00251 
+0024                  00252 getCH
+0024   0782           00253      addwf PCL,F
+0025   3430           00254      retlw '0'
+0026   3431           00255      retlw '1'
+0027   3432           00256      retlw '2'
+0028   3433           00257      retlw '3'
+0029   3434           00258      retlw '4'
+002A   3435           00259      retlw '5'
+002B   3436           00260      retlw '6'
+002C   3437           00261      retlw '7'
+002D   3438           00262      retlw '8'
+002E   3439           00263      retlw '9'
+002F   3441           00264      retlw 'A'
+0030   3442           00265      retlw 'B'
+0031   3443           00266      retlw 'C'
+0032   3444           00267      retlw 'D'
+0033   3445           00268      retlw 'E'
+0034   3446           00269      retlw 'F'
+                      00270     
+                      00271 
+0035                  00272 _Hex08
+0035   01A7           00273      clrf TEMP1
+0036   0829           00274      movfw TEMP2
+0037                  00275 _V08_H
+0037   0225           00276      subwf LO_TEMP,W
+0038   1C03           00277      skpc
+0039   2???           00278      goto _VH8_LCD
+003A   0AA7           00279      incf TEMP1,F
+003B   0829           00280      movfw TEMP2
+003C   02A5           00281      subwf LO_TEMP,F
+003D   16AC           00282      bsf BCflag
+003E   2???           00283      goto _V08_H    
+003F                  00284 _VH8_LCD
+                      00285 
+003F   30??           00286      movlw high getCH
+0040   008A           00287      movwf PCLATH
+0041   0827           00288      movfw TEMP1
+0042   2???           00289      call getCH
+0043   0008           00290      return
+                      00291 
+                      00292 
+                      00293 ;*****************************************************
+                      00294 
+                      00295 
+                      00296 
+0044                  00297 LCDval08
+                      00298  
+0044   00A3           00299         movwf   LO
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0045   00A5           00300         movwf   LO_TEMP         ; LO -> LO_TEMP
+0046   12AC           00301         bcf     BCflag          ; blank checker for preceeding zeros
+                      00302 
+0047   3064           00303         movlw   d'100'          ; check amount of 100s
+0048   00A9           00304         movwf   TEMP2           ; ==> Decimal Range 0 - 255 <=> 8 bit
+0049   2???           00305         call    _VALcnv08       ; call conversion sub-routine
+                      00306         LCDw                    ; call LCD sub-routine with value stored in w
+004A   2???               M         call    LCDdata
+                      00307 
+004B   300A           00308         movlw   d'10'           ; check amount of 10s
+004C   00A9           00309         movwf   TEMP2
+004D   2???           00310         call    _VALcnv08       ; call conversion sub-routine
+                      00311         LCDw                    ; call LCD sub-routine with value stored in w
+004E   2???               M         call    LCDdata
+                      00312 
+004F   3001           00313         movlw   d'1'            ; check amount of 1s
+0050   00A9           00314         movwf   TEMP2
+0051   16AC           00315         bsf     BCflag          ; remove blank checker in case of zero
+0052   2???           00316         call    _VALcnv08       ; call conversion sub-routine
+                      00317         LCDw                    ; call LCD sub-routine with value stored in w
+0053   2???               M         call    LCDdata
+                      00318  
+0054   0008           00319         RETURN
+                      00320  
+                      00321 
+                      00322 ;*****************************************************
+                      00323 
+                      00324 
+0055                  00325 LCDval16
+                      00326  
+0055   0823           00327         movfw   LO              ; LO -> LO_TEMP
+0056   00A5           00328         movwf   LO_TEMP
+0057   0824           00329         movfw   HI              ; HI -> HI_TEMP
+0058   00A6           00330         movwf   HI_TEMP
+0059   12AC           00331         bcf     BCflag          ; Blank checker for preceeding zeros
+                      00332 
+005A   3010           00333         movlw   b'00010000'     ; check amount of 10000s
+005B   00A9           00334         movwf   TEMP2           ; Sub-LO
+005C   3027           00335         movlw   b'00100111'
+005D   00A8           00336         movwf   TEMP3           ; Sub-HI
+005E   2???           00337         call    _VALcnv16       ; call conversion sub-routine
+                      00338         LCDw                    ; call LCD sub-routine with value stored in w
+005F   2???               M         call    LCDdata
+                      00339 
+0060   30E8           00340         movlw   b'11101000'     ; check amount of 1000s
+0061   00A9           00341         movwf   TEMP2           ; Sub-LO
+0062   3003           00342         movlw   b'00000011'
+0063   00A8           00343         movwf   TEMP3           ; Sub-HI
+0064   2???           00344         call    _VALcnv16       ; call conversion sub-routine
+                      00345         LCDw                    ; call LCD sub-routine with value stored in w
+0065   2???               M         call    LCDdata
+                      00346 
+0066   3064           00347         movlw   b'01100100'     ; check amount of 100s
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0067   00A9           00348         movwf   TEMP2           ; Sub-LO
+0068   01A8           00349         clrf    TEMP3           ; Sub-HI is zero
+0069   2???           00350         call    _VALcnv16       ; call conversion sub-routine
+                      00351         LCDw                    ; call LCD sub-routine with value stored in w
+006A   2???               M         call    LCDdata
+                      00352 
+006B   300A           00353         movlw   b'00001010'     ; check amount of 10s
+006C   00A9           00354         movwf   TEMP2           ; Sub-LO
+006D   01A8           00355         clrf    TEMP3           ; Sub-HI is zero
+006E   2???           00356         call    _VALcnv16       ; call conversion sub-routine
+                      00357         LCDw                    ; call LCD sub-routine with value stored in w
+006F   2???               M         call    LCDdata
+                      00358 
+0070   3001           00359         movlw   b'00000001'     ; check amount of 1s
+0071   00A9           00360         movwf   TEMP2           ; Sub-LO
+0072   01A8           00361         clrf    TEMP3           ; Sub-HI is zero
+0073   16AC           00362         bsf     BCflag          ; remove blank checker in case of zero
+0074   2???           00363         call    _VALcnv16       ; call conversion sub-routine
+                      00364         LCDw                    ; call LCD sub-routine with value stored in w
+0075   2???               M         call    LCDdata
+                      00365  
+0076   0008           00366         RETURN
+                      00367 
+                      00368 
+                      00369 ;*****************************************************
+                      00370 
+                      00371 
+0077                  00372 LCDval32
+                      00373  
+                      00374  
+0077   12AC           00375    bcf BCflag
+0078   3080           00376    movlw 0x80
+0079   00A9           00377    movwf TEMP2
+007A   3096           00378    movlw 0x96
+007B   00A8           00379    movwf TEMP3
+007C   3098           00380    movlw 0x98
+007D   00AA           00381    movwf TEMP4
+007E   01AB           00382    clrf TEMP5
+007F   2???           00383    call _Valcnv32
+0080   2???           00384    call LCDdata
+0081   16AC           00385    bsf BCflag
+                      00386 
+0082   3040           00387    movlw 0x40
+0083   00A9           00388    movwf TEMP2
+0084   3042           00389    movlw 0x42
+0085   00A8           00390    movwf TEMP3
+0086   300F           00391    movlw 0x0f
+0087   00AA           00392    movwf TEMP4
+0088   01AB           00393    clrf TEMP5
+0089   2???           00394    call _Valcnv32
+008A   2???           00395    call LCDdata
+                      00396 
+008B   302C           00397    movlw ','
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+008C   2???           00398    call LCDdata
+                      00399 
+008D   30A0           00400    movlw 0xa0
+008E   00A9           00401    movwf TEMP2
+008F   3086           00402    movlw 0x86
+0090   00A8           00403    movwf TEMP3
+0091   3001           00404    movlw 0x01
+0092   00AA           00405    movwf TEMP4
+0093   01AB           00406    clrf TEMP5
+0094   2???           00407    call _Valcnv32
+0095   2???           00408    call LCDdata
+                      00409 
+0096   3010           00410    movlw 0x10
+0097   00A9           00411    movwf TEMP2
+0098   3027           00412    movlw 0x27
+0099   00A8           00413    movwf TEMP3
+009A   01AA           00414    clrf TEMP4
+009B   01AB           00415    clrf TEMP5
+009C   2???           00416    call _Valcnv32
+009D   2???           00417    call LCDdata
+                      00418 
+                      00419  ;  movlw 0xe8
+                      00420  ;  movwf TEMP2
+                      00421  ;  movlw 0x03
+                      00422  ;  movwf TEMP3
+                      00423  ;  clrf TEMP4
+                      00424  ;  clrf TEMP5
+                      00425  ;  call _Valcnv32
+                      00426  ;  call LCDdata
+                      00427 
+                      00428  ;  movlw 0x64
+                      00429  ;  movwf TEMP2
+                      00430  ;  clrf TEMP3
+                      00431  ;  clrf TEMP4
+                      00432  ;  clrf TEMP5
+                      00433  ;  call _Valcnv32
+                      00434  ;  call LCDdata
+                      00435 
+                      00436  ;  movlw 0x0a
+                      00437  ;  movwf TEMP2
+                      00438  ;  clrf TEMP3
+                      00439  ;  clrf TEMP4
+                      00440  ;  clrf TEMP5
+                      00441  ;  call _Valcnv32
+                      00442  ;  call LCDdata
+                      00443 
+                      00444  ;  movlw 0x01
+                      00445  ;  movwf TEMP2
+                      00446  ;  clrf TEMP3
+                      00447  ;  clrf TEMP4
+                      00448  ;  clrf TEMP5
+                      00449  ;  call _Valcnv32
+                      00450  ;  call LCDdata
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00451  
+009E   0008           00452    return
+                      00453 
+                      00454 
+                      00455 ;************************************************************************
+                      00456 
+                      00457 
+                      00458     
+                      00459 
+                      00460 
+009F                  00461 _VALcnv08
+009F   01A7           00462         clrf    TEMP1           ; counter
+00A0   0829           00463         movfw   TEMP2           ; decrement-value
+00A1   0225           00464 _V08_1  subwf   LO_TEMP,W       ; TEST: LO_TEMP-TEMP2 >= 0 ?
+00A2   1C03           00465         skpc            ; btfss STATUS,C skip, if true
+00A3   2???           00466         goto    _V08_LCD        ; result negativ, exit
+00A4   0AA7           00467         incf    TEMP1,F         ; count
+00A5   0829           00468         movfw   TEMP2           ; decrement-value
+00A6   02A5           00469         subwf   LO_TEMP,F       ; STORE: LO_TEMP = LO_TEMP - TEMP2
+00A7   16AC           00470         bsf     BCflag          ; invalidate flag
+00A8   2???           00471         goto    _V08_1          ; repeat
+00A9                  00472 _V08_LCD
+00A9   3030           00473         movlw   '0'             ; writes Number to LCD
+00AA   0727           00474         addwf   TEMP1,W         ; '0' is ascii offset, add counter
+00AB   1EAC           00475         btfss   BCflag          ; check flag
+00AC   3020           00476         movlw ' '               ; clear preceeding zeros
+                      00477         ; return with data in w
+00AD   0008           00478         RETURN
+                      00479 
+                      00480 
+                      00481 ;*****************************************************
+                      00482 
+                      00483 
+00AE                  00484 _VALcnv16
+00AE   01A7           00485         clrf    TEMP1           ; clear counter
+00AF   0828           00486 _V16_1  movfw   TEMP3
+00B0   0226           00487         subwf   HI_TEMP,w       ; TEST: HI_TEMP-TEMP3 >= 0 ?
+00B1   1C03           00488         skpc                    ; skip, if true
+00B2   2???           00489         goto    _V16_LCD        ; result negativ, exit
+00B3   1D03 2???      00490         bnz     _V16_2          ; test zero, jump if result > 0
+00B5   0829           00491         movfw   TEMP2           ; Precondition: HI-TEST is zero
+00B6   0225           00492         subwf   LO_TEMP,w       ; TEST: LO_TEMP-TEMP2 >= 0 ?
+00B7   1C03           00493         skpc                    ; skip, if true
+00B8   2???           00494         goto    _V16_LCD        ; result negativ, exit
+00B9                  00495 _V16_2
+00B9   0828           00496         movfw   TEMP3
+00BA   02A6           00497         subwf   HI_TEMP,f       ; STORE: HI_TEMP = HI_TEMP - TEMP3
+00BB   0829           00498         movfw   TEMP2
+00BC   02A5           00499         subwf   LO_TEMP,f       ; STORE: LO_TEMP = LO_TEMP - TEMP2
+00BD   1C03           00500         skpc                    ; skip, if true
+00BE   03A6           00501         decf    HI_TEMP,f       ; decrement HI
+00BF   0AA7           00502         incf    TEMP1,f         ; increment counter
+00C0   16AC           00503         bsf     BCflag          ; invalidate flag
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00C1   2???           00504         goto    _V16_1
+00C2                  00505 _V16_LCD
+00C2   3030           00506         movlw   '0'             ; writes number to LCD
+00C3   0727           00507         addwf   TEMP1,w         ; '0' is ascii offset, add counter
+00C4   1EAC           00508         btfss   BCflag          ; check flag
+00C5   3020           00509         movlw   ' '             ; clear preceeding zeros
+                      00510         ; return with data in w
+00C6   0008           00511         RETURN
+                      00512 
+                      00513 ;********************************************************************
+                      00514 
+                      00515 
+                      00516 
+00C7                  00517 _Valcnv32
+00C7   01A7           00518    clrf TEMP1
+00C8                  00519 _V32_1
+00C8   082B           00520    movfw TEMP5
+00C9   0226           00521    subwf HI_TEMP,w
+00CA   1C03           00522    skpc
+00CB   2???           00523    goto _V32_LCD
+00CC   1D03 2???      00524    bnz _V32_2
+                      00525 
+00CE   082A           00526    movfw TEMP4
+00CF   0225           00527    subwf LO_TEMP,w
+00D0   1C03           00528    skpc
+00D1   2???           00529    goto _V32_LCD
+00D2   1D03 2???      00530    bnz _V32_2
+                      00531 
+00D4   0828           00532    movfw TEMP3
+00D5   0224           00533    subwf HI,w
+00D6   1C03           00534    skpc
+00D7   2???           00535    goto _V32_LCD
+00D8   1D03 2???      00536    bnz _V32_2
+                      00537 
+00DA   0829           00538    movfw TEMP2
+00DB   0223           00539    subwf LO,w
+00DC   1C03           00540    skpc
+00DD   2???           00541    goto _V32_LCD
+00DE                  00542 _V32_2
+00DE   082B           00543    movfw TEMP5
+00DF   02A6           00544    subwf HI_TEMP,f
+00E0   082A           00545    movfw TEMP4
+00E1   02A5           00546    subwf LO_TEMP,f
+00E2   1C03           00547    skpc
+00E3   03A6           00548    decf HI_TEMP,f
+00E4   0828           00549    movfw TEMP3
+00E5   02A4           00550    subwf HI,f
+00E6   1C03           00551    skpc
+00E7   03A5           00552    decf LO_TEMP,f
+00E8   0829           00553    movfw TEMP2
+00E9   02A3           00554    subwf LO,f
+00EA   1C03           00555    skpc     ; skeep if carry
+00EB   03A4           00556    decf HI,f
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00EC   0AA7           00557    incf TEMP1,f
+00ED   16AC           00558    bsf BCflag
+00EE   2???           00559    goto _V32_1
+00EF                  00560 _V32_LCD
+00EF   3030           00561    movlw '0'
+00F0   0727           00562    addwf TEMP1,w
+00F1   1EAC           00563    btfss BCflag
+00F2   3020           00564    movlw ' '
+00F3   0008           00565    return
+                      00566 
+                      00567 
+                      00568 ;*********************************************************************************************
+                      00569 
+                      00570 
+                      00571 
+                      00572 ;--------------------------------------------------------------------------
+                      00573 
+                      00574  
+                      00575 
+                      00576 ;***** SUBROUTINES *****
+                      00577 
+                      00578         ; transmit only lower nibble of w
+                      00579 
+00F4   00A1           00580 LCDxmit movwf   LCDbuf          ; store command/data nibble
+                      00581         ; first, clear LCD data lines
+                      00582         clrLCDport
+00F5   30F0               M         movlw   b'11110000'     ; get mask
+00F6   0585               M         andwf   LCDport,f       ; clear data lines only
+                      00583         ; second, move data out to LCD data lines
+00F7   0821           00584         movf    LCDbuf,w        ; get data
+00F8   390F           00585         andlw   b'00001111'     ; extract only valid part
+00F9   0485           00586         iorwf   LCDport,f       ; put to LCD data lines
+00FA   0008           00587         RETURN
+                      00588 
+                      00589 ;***************************************************
+                      00590 
+                      00591 
+                      00592 ;*****************************************************
+                      00593 
+                      00594 
+                      00595         ; clocks LCD data/command
+00FB                  00596 LCDclk  ;WAIT   LCDWAIT
+00FB   3004           00597     movlw LCDWAIT
+00FC   2???           00598     call delay_ms
+00FD   1605           00599     bsf     LCD_EN              ; set LCD enable
+                      00600         ; insert LCDSPEED x nops to comply with manufacturer
+                      00601         ; specifications for clock rates above 9 MHz
+  0000                00602         VARIABLE CNT_V          ; declare intermediate variable
+  00000001            00603 CNT_V = LCDSPEED        ; assign pre-defined constant
+                      00604         WHILE (CNT_V > 0x0)     ; perform while loop to insert 'nops'
+00FE   0000           00605           nop                   ; insert 'nop'
+  00000000            00606 CNT_V -= 1              ; decrement
+                      00607         ENDW
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00FF   1205           00608         bcf     LCD_EN
+                      00609         WAIT    LCDWAIT         ; clocks LCD data/command
+                          M         IF (LCDWAIT     != 0)
+0100   3004               M             movlw       LCDWAIT
+0101   2???               M             call delay_ms
+                          M         ENDIF
+0102   0008           00610         RETURN
+                      00611 
+                      00612 
+                      00613 ;*****************************************************
+                      00614 
+                      00615 
+                      00616         ; transmit command to LCD
+0103                  00617 LCDcomd
+0103   1285           00618     bcf LCD_RS          ; select command registers
+0104   2???           00619         goto    _LCD_wr
+                      00620 
+                      00621         ; transmit data to LCD
+0105   1685           00622 LCDdata bsf     LCD_RS          ; select data registers
+0106                  00623 _LCD_wr ;       bcf     LCD_RW          ; set write direction
+0106   00A2           00624         movwf   LCDtemp         ; store command/data to send
+                      00625         ; send hi-nibble
+                      00626 ;       movfw   LCDtemp         ; get data
+0107   0E22           00627         swapf   LCDtemp,w       ; swap hi- and lo-nibble, store in w
+0108   2???           00628         call    LCDxmit         ; transmit nibble
+0109   2???           00629         call    LCDclk
+                      00630         ; send lo-nibble
+010A   0822           00631         movfw   LCDtemp         ; get data
+010B   2???           00632         call    LCDxmit         ; transmit nibble
+010C   2???           00633         call    LCDclk
+                      00634         ; reset LCD controls
+                      00635         clrLCDport              ; reset LCD data lines
+010D   30F0               M         movlw   b'11110000'     ; get mask
+010E   0585               M         andwf   LCDport,f       ; clear data lines only
+010F   1285           00636         bcf     LCD_RS          ; reset command/data register
+0110   0008           00637         RETURN
+                      00638 
+                      00639 ;*****************************************************
+                      00640 
+0111                  00641 LCDinit
+0111   1205           00642         bcf     LCD_EN          ; clear LCD clock line
+0112   1285           00643         bcf     LCD_RS          ; clear command/data line
+                      00644         clrLCDport              ; reset LCD data lines
+0113   30F0               M         movlw   b'11110000'     ; get mask
+0114   0585               M         andwf   LCDport,f       ; clear data lines only
+                      00645         WAIT    4*LCDWAIT       ; >= 40 ms 
+                          M         IF (4*LCDWAIT   != 0)
+0115   3010               M             movlw       4*LCDWAIT
+0116   2???               M             call delay_ms
+                          M         ENDIF
+                      00646 
+                      00647         ; LCD INITIALIZATION STARTS HERE
+                      00648         ; start in 8 bit mode
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0117   3003           00649         movlw   LCDEM8          ; send b'0011' on [DB7:DB4]
+0118   2???           00650         call    LCDxmit         ; start in 8 bit mode 
+0119   2???           00651         call    LCDclk          ; That's while: Wait 39us
+                      00652         WAIT    LCDWAIT         ; On POWER UP, the LCD will initialize itself,
+                          M         IF (LCDWAIT     != 0)
+011A   3004               M             movlw       LCDWAIT
+011B   2???               M             call delay_ms
+                          M         ENDIF
+                      00653                                 ; but after a RESET of the microcontroller without
+                      00654                                 ; POWER OFF, the 8 bit function mode will reboot
+                      00655                                 ; the LCD to 4 bit mode safely.
+                      00656 
+011C   3008           00657         movlw   LCDDZ           ; set DDRAM to zero
+011D   2???           00658         call    LCDxmit
+011E   2???           00659         call    LCDclk
+                      00660         WAIT    LCDWAIT         ; ~1 ms @ 4 MHz
+                          M         IF (LCDWAIT     != 0)
+011F   3004               M             movlw       LCDWAIT
+0120   2???               M             call delay_ms
+                          M         ENDIF
+                      00661 
+0121   3002           00662         movlw   LCDEM4          ; send b'0010' on [DB7:DB4]
+0122   2???           00663         call    LCDxmit         ; change to 4 bit mode
+0123   2???           00664         call    LCDclk
+                      00665         WAIT    LCDWAIT         ; ~1 ms @ 4 MHz
+                          M         IF (LCDWAIT     != 0)
+0124   3004               M             movlw       LCDWAIT
+0125   2???               M             call delay_ms
+                          M         ENDIF
+                      00666 
+                      00667         ; now in 4 bit mode, sending two nibbles
+                      00668         IF LCDTYPE == 0x00
+                      00669           LCDcmd LCD2L          ; function set: 4 bit mode, 2 lines, 5x7 dots
+                      00670           LCDcmd LCDCONT        ; display control: display on, cursor off, blinking off
+                      00671           LCDcmd LCDCLR         ; clear display, address counter to zero
+                      00672           WAIT LCDCLRWAIT       ; wait after LCDCLR until LCD is ready again
+                      00673         ELSE
+                      00674           IF LCDTYPE == 0x01
+                      00675             ; for LCD EA DIP204-4 (white chars, blue backlight)
+                      00676             LCDcmd LCD2L_A      ; switch on extended function set
+0126   302C               M         movlw   LCD2L_A
+0127   2???               M         call    LCDcomd
+                      00677              LCDcmd LCDEXT      ; 4 lines
+0128   3009               M         movlw   LCDEXT
+0129   2???               M         call    LCDcomd
+                      00678              LCDcmd LCD2L_B     ; switch off extended function set
+012A   3028               M         movlw   LCD2L_B
+012B   2???               M         call    LCDcomd
+                      00679             LCDcmd LCDCONT      ; display control: display on, cursor off, blinking off
+012C   300C               M         movlw   LCDCONT
+012D   2???               M         call    LCDcomd
+                      00680             LCDcmd LCDCLR       ; clear display, address counter to zero
+012E   3001               M         movlw   LCDCLR
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+012F   2???               M         call    LCDcomd
+                      00681             WAIT LCDCLRWAIT     ; wait after LCDCLR until LCD is ready again
+                          M         IF (LCDCLRWAIT  != 0)
+0130   3008               M             movlw       LCDCLRWAIT
+0131   2???               M             call delay_ms
+                          M         ENDIF
+                      00682           ELSE
+                      00683             ERROR "Unsupported parameter"
+                      00684           ENDIF
+                      00685         ENDIF
+0132   0008           00686     return
+                      00687 
+                      00688 
+                      00689 
+                      00690 
+                      00691 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00692 
+                      00693 
+0133                  00694 delay_ms            ; W*1ms  at 4MHz
+0133   00A0           00695     movwf delay_mult
+0134                  00696 del_20m             ; 20ms
+                      00697 
+0134   30C8           00698     movlw  d'200'
+0135   00AB           00699     movwf delay_k200
+                      00700 ;   clrwdt
+0136                  00701 del_2u
+0136   0000           00702     nop
+0137   0000           00703     nop
+0138   0000           00704     nop
+0139   0BAB           00705     decfsz delay_k200,f
+013A   2???           00706     goto del_2u
+                      00707 
+013B   0BA0           00708     decfsz delay_mult,f
+013C   2???           00709     goto del_20m
+013D   0008           00710     return
+                      00114 ;    #include "Can_lib.inc"
+                      00115     #include "Iso_lib.inc"
+                      00001 #include "macros16.inc" 
+                      00001 
+                      00002 
+                      00003 ;www.pudn.com > MCP2510com.rar.zip > MACROS16.INC, change:1999-02-16,size:8333b
+                      00004  
+                      00005 
+                      00006 ;Basic macros for PIC16C series 
+                      00007 ;6/20/98 
+                      00008  
+                      00009 #ifdef __16C77 
+                      00010 #define _COMMONBANK  ; use common upper 16 bytes in 4 banks 
+                      00011 #endif 
+                      00012 #ifdef __16C76 
+                      00013 #define _COMMONBANK  ; use common upper 16 bytes in 4 banks 
+                      00014 #endif 
+                      00015  
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000001            00016 TRUE            equ     1 
+  00000000            00017 FALSE           equ     0   
+                      00018  
+                      00019 ; Page 1 register definitions to avoid page warning 
+                      00020  
+                      00021 ;OPTION_REG_P                 EQU     H'0081'-0x80 
+                      00022 ;TRISA_P                      EQU     H'0085'-0x80 
+                      00023 ;TRISB_P                      EQU     H'0086'-0x80 
+                      00024 ;TRISC_P                      EQU     H'0087'-0x80 
+                      00025 ;TRISD_P                      EQU     H'0088'-0x80 
+                      00026 ;TRISE_P                      EQU     H'0089'-0x80 
+  0000008C            00027 PIE1_P                       EQU     H'008C';-0x80 
+                      00028 ;PIE2_P                       EQU     H'008D'-0x80 
+                      00029 ;PCON_P                       EQU     H'008E'-0x80 
+                      00030 ;PR2_P                        EQU     H'0092'-0x80 
+                      00031 ;SSPADD_P                     EQU     H'0093'-0x80 
+                      00032 ;SSPSTAT_P                    EQU     H'0094'-0x80 
+                      00033 ;TXSTA_P                      EQU     H'0098'-0x80 
+                      00034 ;SPBRG_P                      EQU     H'0099'-0x80 
+                      00035 ;ADCON1_P                     EQU     H'009F'-0x80 
+                      00036  
+                      00037  
+                      00038  
+                      00039 ; Special register bit definition pairs 
+                      00040  
+                      00041 ;     STATUS bit definitions 
+                      00042  
+                      00043 #define _C              STATUS,0 
+                      00044 #define _DC             STATUS,1 
+                      00045 #define _Z              STATUS,2 
+                      00046 #define _PD             STATUS,3 
+                      00047 #define _TO             STATUS,4 
+                      00048 #define _RP0            STATUS,5 
+                      00049 #define _RP1            STATUS,6 
+                      00050 #define _IRP            STATUS,7 
+                      00051  
+                      00052  
+                      00053 #define _INTE       INTCON,INTE   ; External interrupt enable  
+                      00054 #define _INTF       INTCON,INTF   ; External interrupt flag 
+                      00055 #define _RBIE       INTCON,RBIE   ; Port B pins 4-7 edge interrupt enable  
+                      00056 #define _RBIF       INTCON,RBIF   ; Port B pins 4-7 edge interrupt flag 
+                      00057 #define _T0IE       INTCON,T0IE   ; Timer 0 interrupt enable  
+                      00058 #define _T0IF       INTCON,T0IF   ; Timer 0 interrupt flag 
+                      00059  
+                      00060 #define _CCP1IE_P   PIE1_P,CCP1IE ; Timer 1 compare int enable (page 1) 
+                      00061 #define _CCP1IF     PIR1,CCP1IF   ; Timer 1 compare int flag 
+                      00062  
+                      00063 #define _RCIE_P     PIE1_P,RCIE   ; async rec interrupt enable (page 1) 
+                      00064 #define _RCIF       PIR1,RCIF     ; async rec interrupt flag 
+                      00065  
+                      00066 #define _TXIE_P     PIE1_P,TXIE   ; async xmit interrupt enable (page 1) 
+                      00067 #define _TXIF       PIR1,TXIF     ; async xmit interrupt flag 
+                      00068  
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00069 #define _SSPIE_P    PIE1_P,SSPIE  ; SSP int enable (page 1) 
+                      00070 #define _SSPIF      PIR1,SSPIF    ; SSP interrupt flag 
+                      00071  
+                      00072 #define _TMR1IE_P   PIE1_P,TMR1IE ; Timer 1 enable (page 1) 
+                      00073 #define _TMR1IF     PIR1,TMR1IF   ; Timer1 interrupt flag 
+                      00074  
+                      00075 #define _TMR2IE_P   PIE1_P,TMR2IE ; Timer 2 enable (page 1) 
+                      00076 #define _TMR2IF     PIR1,TMR2IF   ; Timer2 interrupt flag 
+                      00077  
+                      00078 #ifdef _COMMONBANK ; use common upper 16 bytes in 4 banks 
+                      00079  
+                      00080 PAGE3   macro    
+                      00081         bsf     PCLATH,4 
+                      00082         bsf     PCLATH,3 
+                      00083         endm 
+                      00084  
+                      00085 PAGE2   macro 
+                      00086         bsf     PCLATH,4 
+                      00087         bcf     PCLATH,3 
+                      00088         endm 
+                      00089  
+                      00090 PAGE1   macro    
+                      00091         bcf     PCLATH,4 
+                      00092         bsf     PCLATH,3 
+                      00093         endm 
+                      00094  
+                      00095 PAGE0   macro 
+                      00096         bcf     PCLATH,4 
+                      00097         bcf     PCLATH,3 
+                      00098         endm 
+                      00099  
+                      00100  
+                      00101 BANK3   macro 
+                      00102         bsf     STATUS,6 
+                      00103         bsf     STATUS,5 
+                      00104         endm 
+                      00105  
+                      00106 BANK2   macro 
+                      00107         bsf     STATUS,6 
+                      00108         bcf     STATUS,5 
+                      00109         endm 
+                      00110  
+                      00111 BANK1   macro 
+                      00112         bcf     STATUS,6 
+                      00113         bsf     STATUS,5 
+                      00114         endm 
+                      00115  
+                      00116 BANK0   macro 
+                      00117         bcf     STATUS,6 
+                      00118         bcf     STATUS,5 
+                      00119         endm 
+                      00120  
+                      00121  
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00122 FSRBank23 macro 
+                      00123         bsf     STATUS,7 
+                      00124         endm 
+                      00125  
+                      00126 FSRBank01 macro 
+                      00127         bcf     STATUS,7 
+                      00128         endm 
+                      00129 #else 
+                      00130  
+                      00131  
+                      00132 PAGE1   macro    
+                      00133         bsf     PCLATH,3 
+                      00134         endm 
+                      00135  
+                      00136 PAGE0   macro 
+                      00137         bcf     PCLATH,3 
+                      00138         endm 
+                      00139  
+                      00140 BANK0   macro 
+                      00141         bcf     STATUS,5    ; Select page 0 
+                      00142         endm 
+                      00143  
+                      00144 BANK1   macro 
+                      00145         bsf     STATUS,5    ; Select page 1 
+                      00146         endm 
+                      00147 #endif 
+                      00148  
+                      00149 enableInt macro 
+                      00150         bsf     INTCON,GIE 
+                      00151         endm 
+                      00152  
+                      00153 disableInt macro 
+                      00154           local    Loop 
+                      00155 Loop    bcf     INTCON,GIE 
+                      00156         btfsc   INTCON,GIE 
+                      00157         goto    Loop 
+                      00158         endm 
+                      00159  
+                      00160  
+                      00161  
+                      00162 ; Byte logical & arithmetic macros 
+                      00163  
+                      00164 bV2bV   macro   bSource,bDest 
+                      00165         movf    bSource,W 
+                      00166         movwf   bDest 
+                      00167          endm 
+                      00168  
+                      00169 bL2bV   macro   bVal,bDest 
+                      00170         movlw   bVal 
+                      00171         movwf   bDest 
+                      00172         endm 
+                      00173  
+                      00174 jmpFeqZ macro   Reg,Label 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00175         movf    Reg,F 
+                      00176         btfsc   _Z 
+                      00177         goto    Label 
+                      00178         endm 
+                      00179  
+                      00180 jmpFneZ macro   Reg,Label 
+                      00181         movf    Reg,F 
+                      00182         btfss   _Z 
+                      00183         goto    Label 
+                      00184         endm 
+                      00185  
+                      00186 jmpFgtL macro   Reg1,bVal,Label 
+                      00187           movfw     Reg1 
+                      00188           jmpWgtL   bVal,Label 
+                      00189         endm 
+                      00190  
+                      00191 jmpFgeL macro   Reg1,bVal,Label 
+                      00192           movfw     Reg1 
+                      00193           jmpWgeL   bVal,Label 
+                      00194         endm 
+                      00195  
+                      00196 jmpFeqL macro   Reg,bVal,Label 
+                      00197         movf    Reg,W 
+                      00198           sublw   bVal 
+                      00199         btfsc   _Z 
+                      00200         goto    Label 
+                      00201         endm 
+                      00202  
+                      00203 jmpFneL macro   Reg,bVal,Label 
+                      00204         movf    Reg,W 
+                      00205           sublw   bVal 
+                      00206           btfss   _Z 
+                      00207           goto    Label 
+                      00208           endm 
+                      00209  
+                      00210 jmpFleL macro   Reg1,bVal,Label 
+                      00211           movfw     Reg1 
+                      00212           jmpWleL   bVal,Label 
+                      00213         endm 
+                      00214  
+                      00215 jmpFltL macro   Reg1,bVal,Label 
+                      00216           movfw     Reg1 
+                      00217           jmpWltL   bVal,Label 
+                      00218         endm 
+                      00219  
+                      00220 jmpFeqF macro   Reg1,Reg2,Label 
+                      00221         movf    Reg1,W 
+                      00222         subwf   Reg2,W 
+                      00223         btfsc   _Z 
+                      00224         goto    Label 
+                      00225         endm 
+                      00226  
+                      00227 jmpFneF macro   Reg1,Reg2,Label 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00228         movf    Reg1,W 
+                      00229         subwf   Reg2,W 
+                      00230         btfss   _Z 
+                      00231         goto    Label 
+                      00232         endm 
+                      00233  
+                      00234 jmpFleF macro   Reg1,Reg2,Label 
+                      00235           movfw     Reg1 
+                      00236           jmpWleF   Reg2,Label 
+                      00237         endm 
+                      00238  
+                      00239 jmpFltF macro   Reg1,Reg2,Label 
+                      00240           movfw     Reg1 
+                      00241           jmpWltF   Reg2,Label 
+                      00242         endm 
+                      00243  
+                      00244 jmpWeqZ macro   Label        ; jmp if W == 0 
+                      00245         andlw   0xFF 
+                      00246         jmpZ    Label 
+                      00247         endm 
+                      00248  
+                      00249 jmpWneZ macro   Label        ; jmp if W != 0 
+                      00250         andlw   0xFF 
+                      00251         jmpNZ   Label 
+                      00252         endm 
+                      00253  
+                      00254 skipFeqZ macro   Reg 
+                      00255         movf    Reg,F 
+                      00256         btfss   _Z 
+                      00257         endm 
+                      00258  
+                      00259 skipFneZ macro   Reg 
+                      00260         movf    Reg,F 
+                      00261         btfsc   _Z 
+                      00262         endm 
+                      00263  
+                      00264 skipFeqL macro   Reg,bVal 
+                      00265         movf    Reg,W 
+                      00266         sublw   bVal 
+                      00267         btfss   _Z 
+                      00268         endm 
+                      00269  
+                      00270 skipFneL macro   Reg,bVal 
+                      00271         movf    Reg,W 
+                      00272         sublw   bVal 
+                      00273         btfsc   _Z 
+                      00274         endm 
+                      00275  
+                      00276 skipFeqF macro   Reg1,Reg2 
+                      00277         movf    Reg1,W 
+                      00278         subwf   Reg2,W 
+                      00279         btfss   _Z 
+                      00280         endm 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00281  
+                      00282 skipFneF macro   Reg1,Reg2 
+                      00283         movf    Reg1,W 
+                      00284         subwf   Reg2,W 
+                      00285         btfsc   _Z 
+                      00286         endm 
+                      00287  
+                      00288 skipWeqZ macro 
+                      00289         andlw   0xFF 
+                      00290         btfss   _Z 
+                      00291         endm 
+                      00292  
+                      00293 skipWneZ macro 
+                      00294         andlw   0xFF 
+                      00295         btfsc   _Z 
+                      00296         endm 
+                      00297  
+                      00298 jmpWgtL macro   bVal,Label 
+                      00299         sublw   bVal 
+                      00300         btfss   _C 
+                      00301         goto    Label 
+                      00302         endm 
+                      00303  
+                      00304 jmpWgeL macro   bVal,Label 
+                      00305         sublw   bVal 
+                      00306         btfss   _C 
+                      00307         goto    Label 
+                      00308         btfsc   _Z 
+                      00309         goto    Label 
+                      00310         endm 
+                      00311  
+                      00312 jmpWeqL macro   bVal,Label 
+                      00313         sublw   bVal 
+                      00314         btfsc   _Z 
+                      00315         goto    Label 
+                      00316         endm 
+                      00317  
+                      00318 jmpWneL macro   bVal,Label 
+                      00319         sublw   bVal 
+                      00320         btfss   _Z 
+                      00321         goto    Label 
+                      00322         endm 
+                      00323  
+                      00324 jmpWleL macro   bVal,Label 
+                      00325         sublw   bVal 
+                      00326         btfsc   _C 
+                      00327         goto    Label 
+                      00328         endm 
+                      00329  
+                      00330 jmpWltL macro   bVal,Label 
+                      00331         sublw   bVal 
+                      00332         skipC 
+                      00333         bsf     _Z 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00334         jmpNZ   Label 
+                      00335         endm 
+                      00336  
+                      00337 jmpWgtF macro   Reg,Label 
+                      00338         subwf   Reg,W 
+                      00339         btfss   _C 
+                      00340         goto    Label 
+                      00341         endm 
+                      00342  
+                      00343 jmpWgeF macro   Reg,Label 
+                      00344         subwf   Reg,W 
+                      00345         btfss   _C 
+                      00346         goto    Label 
+                      00347         btfsc   _Z 
+                      00348         goto    Label 
+                      00349         endm 
+                      00350  
+                      00351 jmpWeqF macro   Reg,Label 
+                      00352         subwf   Reg,W 
+                      00353         btfsc   _Z 
+                      00354         goto    Label 
+                      00355         endm 
+                      00356  
+                      00357 jmpWneF macro   Reg,Label 
+                      00358         subwf   Reg,W 
+                      00359         btfss   _Z 
+                      00360         goto    Label 
+                      00361         endm 
+                      00362  
+                      00363 jmpWleF macro   Reg,Label 
+                      00364         subwf   Reg,W 
+                      00365         btfsc   _C 
+                      00366         goto    Label 
+                      00367         endm 
+                      00368  
+                      00369 jmpWltF macro   Reg,Label 
+                      00370         subwf   Reg,W 
+                      00371         skipC 
+                      00372         bsf     _Z 
+                      00373         jmpNZ   Label 
+                      00374         endm 
+                      00375  
+                      00376  
+                      00377 jmpClr  macro Reg,Bit,Label 
+                      00378  
+                      00379         btfss   Reg,Bit 
+                      00380         goto    Label 
+                      00381         endm 
+                      00382  
+                      00383 jmpSet  macro Reg,Bit,Label 
+                      00384         btfsc   Reg,Bit 
+                      00385         goto    Label 
+                      00386         endm 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00387  
+                      00388 jmpZ    macro Label 
+                      00389         btfsc   _Z 
+                      00390         goto    Label 
+                      00391         endm 
+                      00392  
+                      00393 jmpNZ   macro Label 
+                      00394         btfss   _Z 
+                      00395         goto    Label 
+                      00396         endm 
+                      00397  
+                      00398 jmpC    macro Label 
+                      00399         btfsc   _C 
+                      00400         goto    Label 
+                      00401         endm 
+                      00402  
+                      00403 jmpNC   macro Label 
+                      00404         btfss   _C 
+                      00405         goto    Label 
+                      00406         endm 
+                      00407  
+                      00408 skipClr macro Reg,Bit 
+                      00409         btfsc   Reg,Bit 
+                      00410         endm 
+                      00411  
+                      00412 skipSet macro Reg,Bit 
+                      00413         btfss   Reg,Bit 
+                      00414         endm 
+                      00415  
+                      00416 skipNZ  macro 
+                      00417         btfsc   _Z 
+                      00418         endm 
+                      00419  
+                      00420 skipZ   macro 
+                      00421         btfss   _Z 
+                      00422         endm 
+                      00423  
+                      00424 skipNC  macro 
+                      00425         btfsc   _C 
+                      00426         endm 
+                      00427  
+                      00428 skipC   macro 
+                      00429         btfss   _C 
+                      00430         endm 
+                      00431  
+                      00432 toggle  macro Reg,Bit 
+                      00433         local    SLabel,Label 
+                      00434         btfss   Reg,Bit 
+                      00435         goto    SLabel 
+                      00436         bcf     Reg,Bit 
+                      00437         goto    Label 
+                      00438 SLabel  bsf     Reg,Bit 
+                      00439 Label    
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00440         endm         
+                      00441  
+                      00442  
+                      00443 tb2tb macro RegS,BitS,RegD,BitD 
+                      00444           local     jLab1,jLab2 
+                      00445           jmpSet    RegS,BitS,jLab1 
+                      00446           bcf       RegD,BitD 
+                      00447           goto      jLab2 
+                      00448 jLab1     bsf       RegD,BitD 
+                      00449 jLab2 
+                      00450           endm 
+                      00451  
+                      00452 tb2Nottb macro RegS,BitS,RegD,BitD 
+                      00453           local     jLab1,jLab2 
+                      00454           jmpClr    RegS,BitS,jLab1 
+                      00455           bcf       RegD,BitD 
+                      00456           goto      jLab2 
+                      00457 jLab1     bsf       RegD,BitD 
+                      00458 jLab2 
+                      00459           endm 
+                      00460 
+                      00461 
+                      00462 ;;-------------------------------------------------------------
+                      00463 ;;  Jump to label if TMR1H (hi byte) < bClk
+                      00464 ;;-------------------------------------------------------------
+                      00465 
+                      00466 jmp1HNotYet  macro bClk, jLabel
+                      00467 
+                      00468           movfw TMR1H
+                      00469           subwf bClk,W
+                      00470           andlw 0x80
+                      00471           jmpZ jLabel
+                      00472           endm
+                      00473 
+                      00474 ;;-------------------------------------------------------------
+                      00475 ;;  Jump to label if TMR1H (low byte) < bClk
+                      00476 ;;-------------------------------------------------------------
+                      00477 
+                      00478 jmp1HDone  macro bClk, jLabel
+                      00479 
+                      00480           movfw TMR1H
+                      00481           subwf bClk,W
+                      00482           andlw 0x80
+                      00483           jmpNZ jLabel
+                      00484           endm
+                      00485 
+                      00486 
+                      00487   
+                      00488 ;;**************************************************************
+                      00489 
+                      00490 
+                      00491 
+                      00492 intInc macro iVar
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00493        incf iVar,F
+                      00494        skipNZ
+                      00495        incf  iVar+1,F
+                      00496        
+                      00497        endm 
+                      00498 
+                      00499 
+                      00500 ;*****************************************************************
+                      00501 
+                      00502 
+                      00503 
+                      00504 
+                      00505 Set1HClock macro bClk,Value
+                      00506            movfw TMR1H
+                      00507            addlw Value 
+                      00508            movwf bClk
+                      00509            endm
+                      00002 
+                      00003  
+                      00004 
+                      00005 ;*************************************************
+                      00006 
+                      00007 
+                      00008 
+                      00009 
+013E                  00010 ISO_Write
+013E   00B3           00011     movwf SData
+013F   1407           00012     bsf PORTC,0
+0140   0831           00013     movfw baudRate
+0141   2???           00014     call delay_ms
+                      00015     
+Warning[205]: Found directive in column 1. (local)
+  0000                00016 local i=0
+Warning[205]: Found directive in column 1. (while)
+                      00017 while i<8
+0142   1833           00018         btfsc SData,i
+0143   1007           00019         bcf PORTC,0
+0144   1C33           00020         btfss SData,i
+0145   1407           00021         bsf PORTC,0
+0146   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000001            00023         i=i+1
+0147   18B3           00018         btfsc SData,i
+0148   1007           00019         bcf PORTC,0
+0149   1CB3           00020         btfss SData,i
+014A   1407           00021         bsf PORTC,0
+014B   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000002            00023         i=i+1
+014C   1933           00018         btfsc SData,i
+014D   1007           00019         bcf PORTC,0
+014E   1D33           00020         btfss SData,i
+014F   1407           00021         bsf PORTC,0
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0150   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000003            00023         i=i+1
+0151   19B3           00018         btfsc SData,i
+0152   1007           00019         bcf PORTC,0
+0153   1DB3           00020         btfss SData,i
+0154   1407           00021         bsf PORTC,0
+0155   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000004            00023         i=i+1
+0156   1A33           00018         btfsc SData,i
+0157   1007           00019         bcf PORTC,0
+0158   1E33           00020         btfss SData,i
+0159   1407           00021         bsf PORTC,0
+015A   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000005            00023         i=i+1
+015B   1AB3           00018         btfsc SData,i
+015C   1007           00019         bcf PORTC,0
+015D   1EB3           00020         btfss SData,i
+015E   1407           00021         bsf PORTC,0
+015F   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000006            00023         i=i+1
+0160   1B33           00018         btfsc SData,i
+0161   1007           00019         bcf PORTC,0
+0162   1F33           00020         btfss SData,i
+0163   1407           00021         bsf PORTC,0
+0164   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000007            00023         i=i+1
+0165   1BB3           00018         btfsc SData,i
+0166   1007           00019         bcf PORTC,0
+0167   1FB3           00020         btfss SData,i
+0168   1407           00021         bsf PORTC,0
+0169   2???           00022         call delay_ms
+Warning[207]: Found label after column 1. (i)
+  00000008            00023         i=i+1
+Warning[205]: Found directive in column 1. (endw)
+                      00024 endw
+016A   1007           00025     bcf PORTC,0
+016B   2???           00026     call delay_ms
+016C   2???           00027     call delay_ms
+016D   0008           00028     return
+                      00029 
+                      00030 
+                      00031 
+                      00032 
+                      00033 ;***********************************************
+                      00034 
+                      00035 
+                      00036 
+                      00037 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+016E                  00038 ISO_Read
+                      00039 
+016E   3008           00040         movlw   0x08            ; Init shift counter
+016F   00B4           00041         movwf   count
+                      00042 
+0170                  00043 sbit
+0170   1B06           00044         btfsc   PORTB, 6        ; Look for start bit
+0171   2???           00045         goto    sbit            ; For Mark
+0172   0C31           00046         rrf     baudRate,W              ; 
+0173   02B2           00047         subwf tmr0,F            ; Load and start timer/counter   
+0174   110B           00048         bcf     INTCON, TMR0IF  ; Clear tmr0 overflow flag
+0175   1D0B           00049 time1   btfss INTCON, TMR0IF    ; Has the timer (bit 2) overflowed?  Skip next line if 1
+0176   2???           00050         goto    time1           ; No
+0177   1B06           00051         btfsc   PORTB,6 ; Start bit still low?
+0178   2???           00052         goto    sbit            ; False start, go back
+0179   3030           00053         movlw   0x30            ; real, define N for timer
+017A   00B2           00054         movwf   tmr0            ; start timer/counter - bit time
+017B   110B           00055         bcf      INTCON, TMR0IF ; Clear tmr0 overflow flag
+017C   1D0B           00056 time2   btfss INTCON, TMR0IF    ; Timer overflow?
+017D   2???           00057         goto    time2           ; No
+017E   3030           00058         movlw   0x30            ; Yes, define N for timer
+017F   00B2           00059         movwf   tmr0            ; Start timer/counter
+0180   110B           00060         bcf     INTCON, 2;      ; Clear tmr0 overflow flah
+0181   0806           00061         movf    PORTB, w        ; Read port A
+0182   00B0           00062         movwf   temp            ; Store
+0183   0CB0           00063         rrf     temp, f         ; Rotate bit 0 into carry flag
+0184   0CB3           00064         rrf     SData, f        ; Rotate carry into rcvReg bit 7
+0185   0BB4           00065         decfsz  count, f        ; Shifted 8?
+0186   2???           00066         goto    time2           ; No
+0187   1D0B           00067 time3   btfss   INTCON, 2       ; Timer overflow?
+0188   2???           00068         goto    time3           ; No
+                      00069     
+                      00070 
+0189   0008           00071     return
+                      00072 
+                      00073 
+                      00074  
+018A                  00116 main
+018A   2???           00117      call SetupISO
+                      00118 
+018B   2???           00119      call LCDinit  
+                      00120 
+                      00121  ;    call ISO_9141_2
+018C   2???           00122      call ISO_14230
+                      00123  
+                      00124       
+                      00125  
+                      00126      
+018D                  00127 wait
+018D   0000           00128      nop
+018E   2???           00129      goto wait
+                      00130 
+                      00131 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00132 
+                      00133 
+                      00134 
+                      00135 
+018F                  00136 GetStrAddr:
+018F   0782           00137     addwf PCL,F
+0190   3400           00138     retlw Str0-Str0
+0191   340A           00139     retlw Str1-Str0
+0192   3413           00140     retlw Str2-Str0
+0193   3428           00141     retlw Str3-Str0
+0194   342F           00142     retlw Str4-Str0
+0195   343B           00143     retlw Str5-Str0
+0196   3446           00144     retlw Str6-Str0
+0197   3454           00145     retlw Str7-Str0
+0198   3460           00146     retlw Str8-Str0
+0199   346C           00147     retlw Str9-Str0
+                      00148 
+                      00149 
+                      00150 
+019A                  00151 Strings
+019A   0782           00152     addwf PCL, F
+019B   3420 344F 3420 00153 Str0: dt " O B D 2 ",0x00
+       3442 3420 3444 
+       3420 3432 3420 
+       3400 
+01A5   3449 3453 344F 00154 Str1: dt "ISO 9141",0x00  
+       3420 3439 3431 
+       3434 3431 3400 
+01AE   3443 3441 344E 00155 Str2: dt "CAN    bits/    Kbps",0x00 
+       3420 3420 3420 
+       3420 3462 3469 
+       3474 3473 342F 
+       3420 3420 3420 
+       3420 344B 3462 
+       3470 3473 3400 
+01C3   346D 3473 3467 00156 Str3: dt "msg ID",0x00 
+       3420 3449 3444 
+       3400 
+01CA   344E 346F 3472 00157 Str4: dt "Normal mode",0x00     
+       346D 3461 346C 
+       3420 346D 346F 
+       3464 3465 3400 
+01D6   3453 346C 3465 00158 Str5: dt "Sleep mode",0x00     
+       3465 3470 3420 
+       346D 346F 3464 
+       3465 3400 
+01E1   344C 346F 346F 00159 Str6: dt "LoopBack mode",0x00     
+       3470 3442 3461 
+       3463 346B 3420 
+       346D 346F 3464 
+       3465 3400 
+01EF   344C 3469 3473 00160 Str7: dt "Listen mode",0x00     
+       3474 3465 346E 
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 31
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+       3420 346D 346F 
+       3464 3465 3400 
+01FB   3443 346F 346E 00161 Str8: dt "Config mode",0x00  
+       3466 3469 3467 
+       3420 346D 346F 
+       3464 3465 3400 
+0207   3420 3420 3445 00162 Str9: dt "  Electro-Solucoes",0x00   
+       346C 3465 3463 
+       3474 3472 346F 
+       342D 3453 346F 
+       346C 3475 3463 
+       346F 3465 3473 
+       3400 
+                      00163 
+                      00164 
+                      00165 
+                      00166 
+021A                  00167 SetupISO
+                      00168  
+                      00169     ; Cfg_ISO
+                      00170 
+                      00171     
+021A   0064           00172     clrwdt
+                      00173     BANK1
+021B   1683               M         bsf     STATUS,5    ; Select page 1 
+                      00174 
+021C   3006           00175      movlw b'00000110'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+021D   009F           00176      movwf ADCON1        ; Set PORTA Digital I/O
+                      00177    
+                      00178 
+                      00179 
+                      00180 
+                      00181   ; TRM0 config 
+021E   3085           00182      movlw b'10000101'       ; configure Timer0
+                      00183            ; 1-------       PORTB pull-up resistor dissable 
+                      00184            ; -0------       Interrupt falling edge RB0
+                      00185            ; --0-----       TMR0 source clock internal(TOCS = 0)
+                      00186            ; --------       TMR0 source edge of RA4/INT
+                      00187            ; ----0---       prescaler assigned to Timer0 (PSA = 0)
+                      00188            ; -----101       prescale = 1:64 (PS = 101)
+                      00189                           ; TMR0 0.27127 * 64 = 17.361 
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+021F   0081           00190      movwf OPTION_REG
+                      00191 
+                      00192   ; Clear BANK0
+0220   3020           00193      movlw 0x20
+0221   0084           00194      movwf FSR
+0222                  00195 jInitClr1
+0222   0180           00196      clrf INDF
+0223   0A84           00197      incf FSR,F
+                      00198      jmpClr FSR,7, jInitClr1        
+                          M  
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 32
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0224   1F84               M         btfss   FSR,7   
+0225   2???               M         goto    jInitClr1 
+                      00199 
+                      00200    ; Clear BANK1
+0226   30A0           00201      movlw 0xA0
+0227   0084           00202      movwf FSR
+0228                  00203 jInitClr2
+0228   0180           00204      clrf INDF
+0229   0A84           00205      incf FSR,F
+                      00206      jmpClr FSR,7, jInitClr2        
+                          M  
+022A   1F84               M         btfss   FSR,7   
+022B   2???               M         goto    jInitClr2 
+                      00207 
+022C   2???           00208      call InitIO
+                      00209     ; config TIMER1
+                      00210      BANK1
+022D   1683               M         bsf     STATUS,5    ; Select page 1 
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+022E   140C           00211      bsf _TMR1IE_P   ; 00000001
+                      00212 
+                      00213      BANK0
+022F   1283               M         bcf     STATUS,5    ; Select page 0 
+0230   018F           00214      clrf TMR1H
+0231   018E           00215      clrf TMR1L
+                      00216 
+                      00217      
+                      00218 ;     movlw 0x40
+                      00219 ;     call CheckHD
+                      00220 ;     call LCD_String
+                      00221      
+                      00222    
+0232   0008           00223     return
+                      00224 
+                      00225 
+                      00226 
+                      00227 
+                      00228 ;************************************************
+                      00229 
+0233                  00230 InitIO
+                      00231      BANK0
+0233   1283               M         bcf     STATUS,5    ; Select page 0 
+0234   0185           00232      clrf PORTA
+0235   0186           00233      clrf PORTB
+0236   0187           00234      clrf PORTC
+0237   1507           00235      bsf PORTC,2
+                      00236 
+                      00237      BANK1
+0238   1683               M         bsf     STATUS,5    ; Select page 1 
+                      00238      
+                      00239      ; PORTA
+                      00240      ;      0     display d4       
+                      00241      ;      1     display d5       
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 33
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00242      ;      2     display d6       
+                      00243      ;      3     display d7       
+                      00244      ;      4     display en       
+                      00245      ;      5     display rs  
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0239   0185           00246      clrf TRISA     
+                      00247 
+                      00248      ; PORTB
+                      00249      ;       0 in key left 
+                      00250      ;       1 in key left
+                      00251      ;       2 in key enter
+                      00252      ;       3 in key right
+                      00253      ;       4 in key down 
+                      00254      ;       5 in key up 
+                      00255      ;       6 in  K Line 
+                      00256      ;       7 - CAN/ISO selection
+023A   307F           00257      movlw b'01111111'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+023B   0086           00258      movwf TRISB
+                      00259    
+                      00260      ; PORTC
+                      00261      ;      0   out K Line
+                      00262      ;      1   out L Line  
+                      00263      ;      2   X out CS  
+                      00264      ;      3   X out SPI clock - master 
+                      00265      ;      4   X in SPI data - SO
+                      00266      ;      5   X out SPI data out - SI
+                      00267      ;      6   TX 
+                      00268      ;      7   RX 
+023C   30FC           00269      movlw b'11111100'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+023D   0087           00270      movwf TRISC
+                      00271      BANK0
+023E   1283               M         bcf     STATUS,5    ; Select page 0 
+023F   0008           00272      return
+                      00273 
+                      00274 
+                      00275 
+                      00276 ;**************************************************
+                      00277 
+0240                  00278 ISO_14230
+                      00279 
+0240   1386           00280     bcf PORTB,7   ; Enable ISO
+0241   1007           00281     bcf PORTC,0   ; Bus hidle hi
+                      00282     
+                      00283    
+                      00284    ; Set baudRate to 5bits per second (T=200ms)
+0242   30C8           00285     movlw 0xC8
+0243   00B1           00286     movwf baudRate
+                      00287 
+0244   30FF           00288     movlw 0xff       ; 256ms
+0245   2???           00289     call delay_ms
+0246   302C           00290     movlw 0x2C       ;  44ms
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 34
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0247   2???           00291     call delay_ms
+0248                  00292 rep
+0248   3033           00293     movlw 0x33   ; Init sequence
+0249   2???           00294     call ISO_Write
+024A   2???           00295     goto rep
+                      00296 
+024B   2???           00297     call ISO_Read
+024C   3C55           00298     sublw 0x55
+024D   1D03           00299     btfss STATUS,Z
+024E   2???           00300     goto InitErr
+                      00301     ; Init ISO success
+                      00302     ; set baudRate to 10.4 Kbps
+024F   3060           00303     movlw 0x60
+0250   00B1           00304     movwf baudRate
+                      00305     ; wait for key bytes
+0251   2???           00306     call ISO_Read
+0252   1903           00307     btfsc STATUS,Z
+0253   2???           00308     goto InitErr
+                      00309  ;   test received byte
+0254   2???           00310     call ISO_Read
+0255   1903           00311     btfsc STATUS,Z
+0256   2???           00312     goto InitErr
+0257   00B0           00313     movwf temp
+0258   0E30           00314     swapf temp,W
+0259   2???           00315     call ISO_Write
+                      00316     LCD_Text 1,"ISO 14230_4 OK"
+  0000                    M     LOCAL Message
+  0000                    M     LOCAL START
+  0000                    M     LOCAL EXIT
+  0000                    M     LOCAL I=0
+025A   2???               M        goto START
+025B   3449 3453 344F     M Message dt "ISO 14230_4 OK"
+       3420 3431 3434 
+       3432 3433 3430 
+       345F 3434 3420 
+       344F 344B 
+0269   3400               M        dt 0
+026A                      M START
+                          M     IF 1==1
+                          M         LCDcmd LCDL1
+026A   3080               M         movlw   LCDL1
+026B   2???               M         call    LCDcomd
+                          M     ELSE
+                          M     IF 1==2
+                          M         LCDcmd LCDL2
+                          M     ELSE
+                          M     IF 1==3
+                          M         LCDcmd LCDL3
+                          M     ELSE
+                          M     IF 1==4
+                          M         LCDcmd LCDL4
+                          M     ENDIF
+                          M     ENDIF
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 35
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                          M     ENDIF
+                          M     ENDIF
+                          M     WHILE I<20
+026C   2???               M          call (Message+I)
+026D   3E00               M          addlw 0
+026E   1903 2???          M          bz EXIT
+0270   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000001                M          I=I+1 
+0271   2???               M          call (Message+I)
+0272   3E00               M          addlw 0
+0273   1903 2???          M          bz EXIT
+0275   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000002                M          I=I+1 
+0276   2???               M          call (Message+I)
+0277   3E00               M          addlw 0
+0278   1903 2???          M          bz EXIT
+027A   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000003                M          I=I+1 
+027B   2???               M          call (Message+I)
+027C   3E00               M          addlw 0
+027D   1903 2???          M          bz EXIT
+027F   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000004                M          I=I+1 
+0280   2???               M          call (Message+I)
+0281   3E00               M          addlw 0
+0282   1903 2???          M          bz EXIT
+0284   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000005                M          I=I+1 
+0285   2???               M          call (Message+I)
+0286   3E00               M          addlw 0
+0287   1903 2???          M          bz EXIT
+0289   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000006                M          I=I+1 
+028A   2???               M          call (Message+I)
+028B   3E00               M          addlw 0
+028C   1903 2???          M          bz EXIT
+028E   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000007                M          I=I+1 
+028F   2???               M          call (Message+I)
+0290   3E00               M          addlw 0
+0291   1903 2???          M          bz EXIT
+0293   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000008                M          I=I+1 
+0294   2???               M          call (Message+I)
+0295   3E00               M          addlw 0
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 36
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0296   1903 2???          M          bz EXIT
+0298   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000009                M          I=I+1 
+0299   2???               M          call (Message+I)
+029A   3E00               M          addlw 0
+029B   1903 2???          M          bz EXIT
+029D   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000A                M          I=I+1 
+029E   2???               M          call (Message+I)
+029F   3E00               M          addlw 0
+02A0   1903 2???          M          bz EXIT
+02A2   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000B                M          I=I+1 
+02A3   2???               M          call (Message+I)
+02A4   3E00               M          addlw 0
+02A5   1903 2???          M          bz EXIT
+02A7   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000C                M          I=I+1 
+02A8   2???               M          call (Message+I)
+02A9   3E00               M          addlw 0
+02AA   1903 2???          M          bz EXIT
+02AC   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000D                M          I=I+1 
+02AD   2???               M          call (Message+I)
+02AE   3E00               M          addlw 0
+02AF   1903 2???          M          bz EXIT
+02B1   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000E                M          I=I+1 
+02B2   2???               M          call (Message+I)
+02B3   3E00               M          addlw 0
+02B4   1903 2???          M          bz EXIT
+02B6   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000F                M          I=I+1 
+02B7   2???               M          call (Message+I)
+02B8   3E00               M          addlw 0
+02B9   1903 2???          M          bz EXIT
+02BB   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000010                M          I=I+1 
+02BC   2???               M          call (Message+I)
+02BD   3E00               M          addlw 0
+02BE   1903 2???          M          bz EXIT
+02C0   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000011                M          I=I+1 
+02C1   2???               M          call (Message+I)
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 37
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+02C2   3E00               M          addlw 0
+02C3   1903 2???          M          bz EXIT
+02C5   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000012                M          I=I+1 
+02C6   2???               M          call (Message+I)
+02C7   3E00               M          addlw 0
+02C8   1903 2???          M          bz EXIT
+02CA   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000013                M          I=I+1 
+02CB   2???               M          call (Message+I)
+02CC   3E00               M          addlw 0
+02CD   1903 2???          M          bz EXIT
+02CF   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000014                M          I=I+1 
+                          M     ENDW
+Warning[207]: Found label after column 1. (EXIT)
+02D0                      M     EXIT
+02D0   3401           00317     retlw 1
+02D1                  00318 InitErr 
+                      00319     LCD_Text 1,"ISO 14230-4 Fail"  
+  0000                    M     LOCAL Message
+  0000                    M     LOCAL START
+  0000                    M     LOCAL EXIT
+  0000                    M     LOCAL I=0
+02D1   2???               M        goto START
+02D2   3449 3453 344F     M Message dt "ISO 14230-4 Fail"
+       3420 3431 3434 
+       3432 3433 3430 
+       342D 3434 3420 
+       3446 3461 3469 
+       346C 
+02E2   3400               M        dt 0
+02E3                      M START
+                          M     IF 1==1
+                          M         LCDcmd LCDL1
+02E3   3080               M         movlw   LCDL1
+02E4   2???               M         call    LCDcomd
+                          M     ELSE
+                          M     IF 1==2
+                          M         LCDcmd LCDL2
+                          M     ELSE
+                          M     IF 1==3
+                          M         LCDcmd LCDL3
+                          M     ELSE
+                          M     IF 1==4
+                          M         LCDcmd LCDL4
+                          M     ENDIF
+                          M     ENDIF
+                          M     ENDIF
+                          M     ENDIF
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 38
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                          M     WHILE I<20
+02E5   2???               M          call (Message+I)
+02E6   3E00               M          addlw 0
+02E7   1903 2???          M          bz EXIT
+02E9   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000001                M          I=I+1 
+02EA   2???               M          call (Message+I)
+02EB   3E00               M          addlw 0
+02EC   1903 2???          M          bz EXIT
+02EE   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000002                M          I=I+1 
+02EF   2???               M          call (Message+I)
+02F0   3E00               M          addlw 0
+02F1   1903 2???          M          bz EXIT
+02F3   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000003                M          I=I+1 
+02F4   2???               M          call (Message+I)
+02F5   3E00               M          addlw 0
+02F6   1903 2???          M          bz EXIT
+02F8   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000004                M          I=I+1 
+02F9   2???               M          call (Message+I)
+02FA   3E00               M          addlw 0
+02FB   1903 2???          M          bz EXIT
+02FD   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000005                M          I=I+1 
+02FE   2???               M          call (Message+I)
+02FF   3E00               M          addlw 0
+0300   1903 2???          M          bz EXIT
+0302   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000006                M          I=I+1 
+0303   2???               M          call (Message+I)
+0304   3E00               M          addlw 0
+0305   1903 2???          M          bz EXIT
+0307   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000007                M          I=I+1 
+0308   2???               M          call (Message+I)
+0309   3E00               M          addlw 0
+030A   1903 2???          M          bz EXIT
+030C   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000008                M          I=I+1 
+030D   2???               M          call (Message+I)
+030E   3E00               M          addlw 0
+030F   1903 2???          M          bz EXIT
+0311   2???               M          call LCDdata
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 39
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[207]: Found label after column 1. (I)
+  00000009                M          I=I+1 
+0312   2???               M          call (Message+I)
+0313   3E00               M          addlw 0
+0314   1903 2???          M          bz EXIT
+0316   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000A                M          I=I+1 
+0317   2???               M          call (Message+I)
+0318   3E00               M          addlw 0
+0319   1903 2???          M          bz EXIT
+031B   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000B                M          I=I+1 
+031C   2???               M          call (Message+I)
+031D   3E00               M          addlw 0
+031E   1903 2???          M          bz EXIT
+0320   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000C                M          I=I+1 
+0321   2???               M          call (Message+I)
+0322   3E00               M          addlw 0
+0323   1903 2???          M          bz EXIT
+0325   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000D                M          I=I+1 
+0326   2???               M          call (Message+I)
+0327   3E00               M          addlw 0
+0328   1903 2???          M          bz EXIT
+032A   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000E                M          I=I+1 
+032B   2???               M          call (Message+I)
+032C   3E00               M          addlw 0
+032D   1903 2???          M          bz EXIT
+032F   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  0000000F                M          I=I+1 
+0330   2???               M          call (Message+I)
+0331   3E00               M          addlw 0
+0332   1903 2???          M          bz EXIT
+0334   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000010                M          I=I+1 
+0335   2???               M          call (Message+I)
+0336   3E00               M          addlw 0
+0337   1903 2???          M          bz EXIT
+0339   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000011                M          I=I+1 
+033A   2???               M          call (Message+I)
+033B   3E00               M          addlw 0
+033C   1903 2???          M          bz EXIT
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 40
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+033E   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000012                M          I=I+1 
+033F   2???               M          call (Message+I)
+0340   3E00               M          addlw 0
+0341   1903 2???          M          bz EXIT
+0343   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000013                M          I=I+1 
+0344   2???               M          call (Message+I)
+0345   3E00               M          addlw 0
+0346   1903 2???          M          bz EXIT
+0348   2???               M          call LCDdata
+Warning[207]: Found label after column 1. (I)
+  00000014                M          I=I+1 
+                          M     ENDW
+Warning[207]: Found label after column 1. (EXIT)
+0349                      M     EXIT
+0349   3400           00320     retlw 0
+                      00321 
+                      00322 
+3F71                  00323      end
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 41
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADCS2                             00000006
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+BANK0                             
+BANK1                             
+BASE                              00000020
+BCLIE                             00000003
+BCLIF                             00000003
+BCflag                            LCDFLAGreg,0x05
+BF                                00000000
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CHS0                              00000003
+CHS1                              00000004
+CHS2                              00000005
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 42
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CIS                               00000003
+CKE                               00000006
+CKP                               00000004
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000009C
+CMIE                              00000006
+CMIF                              00000006
+CNT_V                             00000000
+CREN                              00000004
+CSRC                              00000007
+CVR0                              00000000
+CVR1                              00000001
+CVR2                              00000002
+CVR3                              00000003
+CVRCON                            0000009D
+CVREN                             00000007
+CVROE                             00000006
+CVRR                              00000005
+D                                 00000005
+DATA_ADDRESS                      00000005
+DC                                00000001
+D_A                               00000005
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+F                                 00000001
+FALSE                             00000000
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+GetStrAddr                        0000018F
+HI                                00000024
+HI_TEMP                           00000026
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+INDEX                             0000002E
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 43
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+INTF                              00000001
+IRP                               00000007
+ISO_14230                         00000240
+ISO_Read                          0000016E
+ISO_Write                         0000013E
+InitErr                           000002D1
+InitIO                            00000233
+LCD2L                             00000028
+LCD2L_A                           0000002C
+LCD2L_B                           00000028
+LCDCH                             00000002
+LCDCL                             00000004
+LCDCLR                            00000001
+LCDCLRWAIT                        00000008
+LCDCONT                           0000000C
+LCDCR                             00000006
+LCDDZ                             00000008
+LCDEM4                            00000002
+LCDEM8                            00000003
+LCDEXT                            00000009
+LCDFLAGreg                        0000002C
+LCDL1                             00000080
+LCDL2                             000000C0
+LCDL3                             00000094
+LCDL4                             000000D4
+LCDLINENUM                        00000004
+LCDMCL                            00000010
+LCDMCR                            00000014
+LCDSL                             00000018
+LCDSPEED                          00000001
+LCDSR                             0000001C
+LCDTYPE                           00000001
+LCDWAIT                           00000004
+LCD_CGAdr                         
+LCD_DDAdr                         
+LCD_EN                            PORTA,0x04
+LCD_Hex                           00000017
+LCD_RS                            PORTA,0x05
+LCD_String                        00000006
+LCD_Text                          
+LCDbuf                            00000021
+LCDclk                            000000FB
+LCDcmd                            
+LCDcomd                           00000103
+LCDdata                           00000105
+LCDinit                           00000111
+LCDport                           00000005
+LCDtemp                           00000022
+LCDtris                           00000085
+LCDval08                          00000044
+LCDval16                          00000055
+LCDval32                          00000077
+LCDw                              
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 44
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+LCDxmit                           000000F4
+LO                                00000023
+LO_TEMP                           00000025
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+OERR                              00000001
+OPTION_REG                        00000081
+P                                 00000004
+PAGE0                             
+PAGE1                             
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE1_P                            0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+R                                 00000002
+RBIE                              00000003
+RBIF                              00000000
+RC8_9                             00000006
+RC9                               00000006
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 45
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+READ_WRITE                        00000002
+RP0                               00000005
+RP1                               00000006
+RSEN                              00000001
+RX9                               00000006
+RX9D                              00000000
+R_W                               00000002
+S                                 00000003
+SData                             00000033
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+STATUS                            00000003
+STR_NUM                           0000002D
+SYNC                              00000004
+Set1HClock                        
+SetupISO                          0000021A
+Str0                              0000019B
+Str1                              000001A5
+Str2                              000001AE
+Str3                              000001C3
+Str4                              000001CA
+Str5                              000001D6
+Str6                              000001E1
+Str7                              000001EF
+Str8                              000001FB
+Str9                              00000207
+Strings                           0000019A
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 46
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TEMP1                             00000027
+TEMP2                             00000029
+TEMP3                             00000028
+TEMP4                             0000002A
+TEMP5                             0000002B
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TMR_COUNT                         000000D9
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRISC                             00000087
+TRMT                              00000001
+TRUE                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+UA                                00000001
+W                                 00000000
+WAIT                              
+WCOL                              00000007
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 47
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_C                                STATUS,0
+_CCP1IE_P                         PIE1_P,CCP1IE
+_CCP1IF                           PIR1,CCP1IF
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00001FFF
+_CP_OFF                           00003FFF
+_DC                               STATUS,1
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_HS_OSC                           00003FFE
+_Hex08                            00000035
+_INTE                             INTCON,INTE
+_INTF                             INTCON,INTF
+_IRP                              STATUS,7
+_LCD_wr                           00000106
+_LP_OSC                           00003FFC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_PD                               STATUS,3
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RBIE                             INTCON,RBIE
+_RBIF                             INTCON,RBIF
+_RCIE_P                           PIE1_P,RCIE
+_RCIF                             PIR1,RCIF
+_RC_OSC                           00003FFF
+_RP0                              STATUS,5
+_RP1                              STATUS,6
+_SSPIE_P                          PIE1_P,SSPIE
+_SSPIF                            PIR1,SSPIF
+_T0IE                             INTCON,T0IE
+_T0IF                             INTCON,T0IF
+_TMR1IE_P                         PIE1_P,TMR1IE
+_TMR1IF                           PIR1,TMR1IF
+_TMR2IE_P                         PIE1_P,TMR2IE
+_TMR2IF                           PIR1,TMR2IF
+_TO                               STATUS,4
+_TXIE_P                           PIE1_P,TXIE
+_TXIF                             PIR1,TXIF
+_V08_1                            000000A1
+_V08_H                            00000037
+_V08_LCD                          000000A9
+_V16_1                            000000AF
+_V16_2                            000000B9
+_V16_LCD                          000000C2
+_V32_1                            000000C8
+_V32_2                            000000DE
+_V32_LCD                          000000EF
+_VALcnv08                         0000009F
+_VALcnv16                         000000AE
+_VH8_LCD                          0000003F
+_Valcnv32                         000000C7
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 48
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_1FOURTH                      00003BFF
+_WRT_256                          00003DFF
+_WRT_HALF                         000039FF
+_WRT_OFF                          00003FFF
+_XT_OSC                           00003FFD
+_Z                                STATUS,2
+__16F876A                         00000001
+__DEBUG                           1
+bL2bV                             
+bV2bV                             
+baudRate                          00000031
+clrLCDport                        
+count                             00000034
+dRelease                          00000000
+dVersion                          00000001
+del_20m                           00000134
+del_2u                            00000136
+delay_k200                        TEMP5
+delay_k50                         TEMP4
+delay_ms                          00000133
+delay_mult                        00000020
+disableInt                        
+done1                             00000016
+enableInt                         
+getCH                             00000024
+intInc                            
+iret                              00000006
+isr                               00000005
+jInitClr1                         00000222
+jInitClr2                         00000228
+jmp1HDone                         
+jmp1HNotYet                       
+jmpC                              
+jmpClr                            
+jmpFeqF                           
+jmpFeqL                           
+jmpFeqZ                           
+jmpFgeL                           
+jmpFgtL                           
+jmpFleF                           
+jmpFleL                           
+jmpFltF                           
+jmpFltL                           
+jmpFneF                           
+jmpFneL                           
+jmpFneZ                           
+jmpNC                             
+jmpNZ                             
+jmpSet                            
+jmpWeqF                           
+jmpWeqL                           
+MPASM  5.37                          MAIN.ASM   12-9-2019  23:27:51         PAGE 49
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+jmpWeqZ                           
+jmpWgeF                           
+jmpWgeL                           
+jmpWgtF                           
+jmpWgtL                           
+jmpWleF                           
+jmpWleL                           
+jmpWltF                           
+jmpWltL                           
+jmpWneF                           
+jmpWneL                           
+jmpWneZ                           
+jmpZ                              
+main                              0000018A
+next1                             0000000E
+rep                               00000248
+sbit                              00000170
+skipC                             
+skipClr                           
+skipFeqF                          
+skipFeqL                          
+skipFeqZ                          
+skipFneF                          
+skipFneL                          
+skipFneZ                          
+skipNC                            
+skipNZ                            
+skipSet                           
+skipWeqZ                          
+skipWneZ                          
+skipZ                             
+tb2Nottb                          
+tb2tb                             
+temp                              00000030
+time1                             00000175
+time2                             0000017C
+time3                             00000187
+tmr0                              00000032
+toggle                            
+wait                              0000018D
+
+Errors   :     0
+Warnings :    56 reported,     0 suppressed
+Messages :     6 reported,     0 suppressed
+
+
