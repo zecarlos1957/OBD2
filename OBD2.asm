@@ -466,7 +466,7 @@ HardStart
      call LCDcomd
      movlw 9
      call LCDText 
-;    LCD_Text 1," Electro-Solucoes"  
+;    LCD_Text 1," Diagnostics"  
 
      movlw 8
      movwf SaveReg
@@ -483,7 +483,7 @@ p1   movlw 0xff
      call LCDcomd
      movlw 0
      call LCDText 
-;    LCD_Text 1,"      O B D 2"
+;    LCD_Text 1,"      O B D II"
 
      call InitSPIPort
   
@@ -879,8 +879,8 @@ GetStrAddr:
 
 Strings
     addwf PCL, F
-Str0: dt " O B D 2 ",0x00
-Str1: dt "Nao compativel",0x00  
+Str0: dt " O B D II",0x00
+Str1: dt "Not compatible",0x00  
 Str2: dt "CAN    bits/    Kbps",0x00 
 Str3: dt "Msg ID ",0x00 
 Str4: dt " Normal mode",0x00     
@@ -888,7 +888,7 @@ Str5: dt " Sleep mode",0x00
 Str6: dt "LoopBack mode",0x00     
 Str7: dt " Listen mode",0x00     
 Str8: dt " Config mode",0x00  
-Str9: dt "Electro-Solucoes",0x00   
+Str9: dt "  Diagnostics   ",0x00   
 
 
        
@@ -1085,7 +1085,7 @@ normal_func
 ;      call Set2510Mode 
      movlw 0
      call LCDText 
-;     LCD_Text 1,"      O B D 2"
+;     LCD_Text 1,"      O B D II"
      bcf config_mode
     ; set default
      bcf CanType, 0   ; default 11 bits
