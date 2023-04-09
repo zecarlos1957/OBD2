@@ -65,34 +65,25 @@
 	ERRORLEVEL -207 	; Found label after column 1.
 	ERRORLEVEL -302 	; Register in operand not in bank 0.
 ;    ERRORLEVEL -305     ; using default destination
+
 ;***** PROCESSOR DECLARATION & CONFIGURATION *****
-
-
 
 dVersion equ 1
 dRelease equ 0
 
 
  	PROCESSOR 16F876a
-    
- 
+
     LIST r=dec, x=on, t=off  
 
 	#include "p16f876a.inc"
-    
+
    #include "MACROS16.inc"
 
 	; embed Configuration Data within .asm File.
 	__CONFIG   _WRT_OFF & _CPD_OFF & _CP_OFF &  _WDT_OFF & _LVP_OFF & _BODEN_ON & _PWRTE_ON & _XT_OSC 
     __IDLOCS (dVersion<<8)|dRelease; version: vvrr; vv - version, rr - release
 
-  
-
-
-
-
-
- 
      #define menu_stage CanType,7
      #define data_nibble CanType,6
      #define config_mode CanType,5
@@ -101,8 +92,6 @@ dRelease equ 0
      #define frametype_flag CanType,0
 
      #define tp2510_CS_ PORTC,2   ; Chip select
- 
-
 
 ;***** CONSTANT DECLARATION *****
 
@@ -143,7 +132,6 @@ HI	equ	BASE+d'4'
 LO_TEMP	set	BASE+d'5'
 HI_TEMP	set	BASE+d'6'
 
-
 TEMP1	equ	BASE+d'7'	; Universal Temporary Register
 TEMP3	equ	BASE+d'8'
 TEMP2	equ	BASE+d'9'
@@ -155,26 +143,19 @@ LCDFLAGreg	equ	BASE+d'12'
 STR_NUM equ BASE+d'13'
 INDEX   equ BASE+d'14'
 
-
 	#define	BCflag   LCDFLAGreg,0x05
-
-
-
 
 	;*** LCD module versions for fixed ports (e.g. PortB) ***
 LCDtris	equ	TRISA
 LCDport	equ	PORTA
 
- 
     #define	LCD_EN     PORTA,0x04	; Enable Output / "CLK"
     #define	LCD_RS     PORTA,0x05	; Register Select
- 
-
-
 
 ;***** LCD COMMANDS *****
 
-  ;*** Standard LCD COMMANDS for INIT ***	( HI-NIBBLE only )
+;*** Standard LCD COMMANDS for INIT ***	( HI-NIBBLE only )
+
 	; for 4 bit mode: send only one nibble as high-nibble [DB7:DB4]
 	CONSTANT  LCDEM8  = b'0011'	; entry mode set: 8 bit mode, 2 lines
 	CONSTANT  LCDEM4  = b'0010'	; entry mode set: 4 bit mode, 2 lines
@@ -193,25 +174,22 @@ LCDport	equ	PORTA
 	CONSTANT  LCDSR   = b'00011100'	; 0x1C cursor/disp control: shift display content right
 	CONSTANT  LCD2L   = b'00101000'	; 0x28 function set: 4 bit mode, 2 lines, 5x7 dots
 	IF (LCDLINENUM == 0x2)
-	  CONSTANT  LCDL1 = b'10000000'	; DDRAM address: 0x00, selects line 1 (2xXX LCD)
-	  CONSTANT  LCDL2 = b'11000000'	; DDRAM address: 0x40, selects line 2 (2xXX LCD)
-	  CONSTANT  LCDL3 = b'10010100'	; (DDRAM address: 0x14, fallback)
-	  CONSTANT  LCDL4 = b'11010100'	; (DDRAM address: 0x54, fallback)
+	CONSTANT  LCDL1 = b'10000000'	; DDRAM address: 0x00, selects line 1 (2xXX LCD)
+	CONSTANT  LCDL2 = b'11000000'	; DDRAM address: 0x40, selects line 2 (2xXX LCD)
+	CONSTANT  LCDL3 = b'10010100'	; (DDRAM address: 0x14, fallback)
+	CONSTANT  LCDL4 = b'11010100'	; (DDRAM address: 0x54, fallback)
 	ELSE
-	  CONSTANT  LCDL1 = b'10000000'	; DDRAM address: 0x00, selects line 1 (4xXX LCD)
-	  CONSTANT  LCDL2 = b'11000000'	; DDRAM address: 0x40, selects line 2 (4xXX LCD)
-	  CONSTANT  LCDL3 = b'10010100'	; DDRAM address: 0x14, selects line 3 (4xXX LCD)
-	  CONSTANT  LCDL4 = b'11010100'	; DDRAM address: 0x54, selects line 4 (4xXX LCD)
+	CONSTANT  LCDL1 = b'10000000'	; DDRAM address: 0x00, selects line 1 (4xXX LCD)
+	CONSTANT  LCDL2 = b'11000000'	; DDRAM address: 0x40, selects line 2 (4xXX LCD)
+	CONSTANT  LCDL3 = b'10010100'	; DDRAM address: 0x14, selects line 3 (4xXX LCD)
+	CONSTANT  LCDL4 = b'11010100'	; DDRAM address: 0x54, selects line 4 (4xXX LCD)
 	ENDIF
 	; special configuration for EA DIP204-4
 	CONSTANT  LCDEXT  = b'00001001'	; 0x09 extended function set EA DIP204-4
 	CONSTANT  LCD2L_A = b'00101100'	; 0x2C enter ext. function set: 4 bit mode, 2 lines, 5x7 dots
 	CONSTANT  LCD2L_B = b'00101000'	; 0x28 exit ext. function set: 4 bit mode, 2 lines, 5x7 dots
 
-
 ;***** MACROS *****
-
-
 
  kkLCD_Text macro LineN, TXMessage
     LOCAL Message
@@ -257,8 +235,6 @@ LCDcmd	macro	LCDcommand	; write command to LCD
 	call	LCDcomd
 	endm
 
-
-
 LCD_DDAdr macro	DDRamAddress
 	Local	value = DDRamAddress | b'10000000'	; mask command
 	IF (DDRamAddress > 0x67)
@@ -284,8 +260,6 @@ clrLCDport macro		; clear/reset LCD data lines
 	andwf	LCDport,f	; clear data lines only
 	endm
 
-
-
 WAIT	macro	timeconst_1
 	IF (timeconst_1 != 0)
 	    movlw	timeconst_1
@@ -293,77 +267,60 @@ WAIT	macro	timeconst_1
 	ENDIF
 	endm
 
-
-
 ;***** MEMORY STRUCTURE *****
-
-
-
-
 
 	ORG     0x00			; processor reset vector
 
-     nop
-     goto HardStart
+    nop
+    goto HardStart
 
  	ORG     0x04			; interrupt vector location
-     
-    ; Save context 
-     movwf bIntSaveW0
-     swapf STATUS,W
-     BANK0
-     movwf bIntSaveSt
-     movfw FSR
-     movwf bIntSaveFSR
-     movf PCLATH,W
-     movwf bIntSavePCLATH
-     clrf PCLATH
 
+   ; Save context
+    movwf bIntSaveW0
+    swapf STATUS,W
+    BANK0
+    movwf bIntSaveSt
+    movfw FSR
+    movwf bIntSaveFSR
+    movf PCLATH,W
+    movwf bIntSavePCLATH
+    clrf PCLATH
 
-     ; SPI interrupt
-     btfsc _SSPIF
-     goto IntSPI
+    ; SPI interrupt
+    btfsc _SSPIF
+    goto IntSPI
 
-  
+    ; RB0 interrupt by INT CAN
+    btfsc INTCON,INTF
+    goto MCP2515_ISR
 
+    ; Timer0 overflow interrupt flag
+    jmpSet INTCON, TMR0IF, jIntTimer0
 
-     ; RB0 interrupt by INT CAN
-     btfsc INTCON,INTF
-     goto MCP2515_ISR
+    ; Timer1 overflow interrupt flag
+    jmpSet _TMR1IF, jIntTimer1
 
- 
-     ; Timer0 overflow interrupt flag
-     jmpSet INTCON, TMR0IF, jIntTimer0    
-
-   
-     ; Timer1 overflow interrupt flag
-     jmpSet _TMR1IF, jIntTimer1    
-
-   
 IntReturn
-     BANK0
-     movf bIntSavePCLATH,W
-     movwf PCLATH
-     movf bIntSaveFSR,W
-     movwf FSR
-     swapf bIntSaveSt,W
-     movwf STATUS
-     swapf bIntSaveW0,F
-     swapf bIntSaveW0,W
-     retfie
-
+    BANK0
+    movf bIntSavePCLATH,W
+    movwf PCLATH
+    movf bIntSaveFSR,W
+    movwf FSR
+    swapf bIntSaveSt,W
+    movwf STATUS
+    swapf bIntSaveW0,F
+    swapf bIntSaveW0,W
+    retfie
 
 #include "can_lib.asm"
 
-
-
 MCP2515_ISR
-     movfw PORTB
-     bcf INTCON,INTF
-     movlw 'E'
-     call LCDdata
-    
-     goto IntReturn
+    movfw PORTB
+    bcf INTCON,INTF
+    movlw 'E'
+    call LCDdata
+    goto IntReturn
 
 ;*********************************************
 ;IntSPI
@@ -378,7 +335,7 @@ IntSPI
 
     movfw SSPBUF
     movwf INDF
-  
+
     decfsz bSPICnt,F
     goto jIntSPI2
 
@@ -392,31 +349,20 @@ jIntSPI2
     movwf SSPBUF
     goto IntReturn
 
-
-
 ;***********************************************
 
 jIntTimer0
      bcf INTCON, TMR0IF
-
      goto IntReturn
 
-
 ;********************************************
-
-
 
 jIntTimer1
      bcf _TMR1IF
      incf iTimer1
      goto IntReturn
-     
- 
-  
-
 
 ;**************************************************
-
 
 ;jKey_ISR
 ;     bcf INTCON,RBIF
@@ -428,10 +374,10 @@ jIntTimer1
 ;     movfw cbit
 ;     movwf PORTB
 ;     movfw PORTB
-;     andlw 0x20  
+;     andlw 0x20
 ;     btfss _Z
 ;     movfw cbit
-;     iorwf cdata,F 
+;     iorwf cdata,F
 ;     bcf _C
 ;     rrf cbit,F
 ;     btfss _C
@@ -439,69 +385,54 @@ jIntTimer1
   ;   goto IntReturn
 ;     return
 
-
-;******************************************************
-;*****************************************************
-;*****************************************************
-
-
-
-
-
-
 ;************** MAIN **************
 
-
-
 HardStart
-     call Init
-     bsf tp2510_CS_  
-                     ;       bit 0 = 0 ->CAN 11 bits
-     movlw 2         ;       bit 0 = 1 ->CAN 29 bits
-     movwf CanType   ;       bit 1 = 0 ->250Khz
-                     ;       bit 1 = 1 ->500Khz    
-     call LCDinit
+    call Init
+    bsf tp2510_CS_
+                    ;       bit 0 = 0 ->CAN 11 bits
+    movlw 2         ;       bit 0 = 1 ->CAN 29 bits
+    movwf CanType   ;       bit 1 = 0 ->250Khz
+                    ;       bit 1 = 1 ->500Khz
+    call LCDinit
 
-     movlw LCDL2+2
-     call LCDcomd
-     movlw 9
-     call LCDText 
-;    LCD_Text 1," Diagnostics"  
+    movlw LCDL2+2
+    call LCDcomd
+    movlw 9
+    call LCDText
+;    LCD_Text 1," Diagnostics"
 
-     movlw 8
-     movwf SaveReg
-p1   movlw 0xff
-     call delay_ms
-     decfsz SaveReg   
-     goto p1
-     
-     movlw LCDCLR
-     call LCDcomd
+    movlw 8
+    movwf SaveReg
+p1  movlw 0xff
+    call delay_ms
+    decfsz SaveReg
+    goto p1
 
+    movlw LCDCLR
+    call LCDcomd
 
-     movlw LCDL1+5
-     call LCDcomd
-     movlw 0
-     call LCDText 
+    movlw LCDL1+5
+    call LCDcomd
+    movlw 0
+    call LCDText 
 ;    LCD_Text 1,"      O B D II"
 
-     call InitSPIPort
-  
-          ; Wait 28ms for MCP2515 to initialize
-     movlw 28
-     call delay_ms
+    call InitSPIPort
+
+         ; Wait 28ms for MCP2515 to initialize
+    movlw 28
+    call delay_ms
 
     movlw LCDL3 
     call LCDcomd
-   
 
-  ;   call Init2510
+;   call Init2510
 
-      call Init1  
-  
- 
+    call Init1
+
 ;     call jSendFrame
-  
+
  ;    SPI_Read TXB0CTRL
  ;    andlw 0x40
  ;    btfss _Z
@@ -510,103 +441,95 @@ p1   movlw 0xff
  ;    goto jMainLoop
 ;jErr
 ;     kkLCD_Text LCDL4,"Error"
-   
-jMainLoop
-      bcf _C
-      bcf _Z
-      call ParseKey
-      call CheckCANMsg
-      addlw 0
-      btfsc _Z
-      goto jMainLoop
-      ; printf msg id
-    
-     movlw LCDL3
-     call LCDcomd
-     movlw 3
-     call LCDText 
-;      LCD_Text 3, "Msg ID "
-      
-      btfss CanType,0
-      goto jRecStd
 
-      movfw iRecEX_L
-      call LCD_Hex
-      movfw iRecEX_H
-      call LCD_Hex
+jMainLoop
+     bcf _C
+     bcf _Z
+     call ParseKey
+     call CheckCANMsg
+     addlw 0
+     btfsc _Z
+     goto jMainLoop
+     ; printf msg id
+
+    movlw LCDL3
+    call LCDcomd
+    movlw 3
+    call LCDText 
+;      LCD_Text 3, "Msg ID "
+
+    btfss CanType,0
+    goto jRecStd
+
+    movfw iRecEX_L
+    call LCD_Hex
+    movfw iRecEX_H
+    call LCD_Hex
 jRecStd
-      movfw iRecID_H
-      call LCD_Hex
-      movfw iRecID_L
-      call LCD_Hex
-      
-      goto jMainLoop
+    movfw iRecID_H
+    call LCD_Hex
+    movfw iRecID_L
+    call LCD_Hex
+
+    goto jMainLoop
 
 ;*************************************
 
- 
-
- ParseKey
-     rrf PORTB,W
-     xorlw 0x7f
-     btfsc _Z
-     return 
-     movwf SaveReg
+ParseKey
+    rrf PORTB,W
+    xorlw 0x7f
+    btfsc _Z
+    return 
+    movwf SaveReg
 waitK
 
-     rrf PORTB,W
-     xorlw 0xff
-     btfss _Z
-     iorwf SaveReg
-     btfss _Z
-     goto waitK      ; wait for key depress
-     movfw SaveReg
-     sublw 0x14
-     btfsc _Z
-     goto CfgFunc 
-     btfss config_mode
-     return
-      btfsc SaveReg,0
-      goto Key_Left
-      btfsc SaveReg,1
-      goto Key_Up
-      btfsc SaveReg,2
-      goto Key_Right
-      btfsc SaveReg,3
-      goto Key_Down
-      btfsc SaveReg,4
-      goto Key_Enter
-     return
-     
-  
- 
-ParseKey1
-     rrf PORTB,W
-     xorlw 0x7f
-     btfsc _Z
-     return 
-     movwf SaveReg
-waitK1
-     rrf PORTB,W
-     xorlw 0xff
-     btfss _Z
-     goto waitK      ; wait for key depress
- 
-      btfsc SaveReg,0
-      goto Key_Left
-      btfsc SaveReg,1
-      goto Key_Up
-      btfsc SaveReg,2
-      goto Key_Right
-      btfsc SaveReg,3
-      goto Key_Down
-      btfsc SaveReg,4
-      goto Key_Enter
-     return
-     
-   
-     
+    rrf PORTB,W
+    xorlw 0xff
+    btfss _Z
+    iorwf SaveReg
+    btfss _Z
+    goto waitK      ; wait for key depress
+    movfw SaveReg
+    sublw 0x14
+    btfsc _Z
+    goto CfgFunc 
+    btfss config_mode
+    return
+    btfsc SaveReg,0
+    goto Key_Left
+    btfsc SaveReg,1
+    goto Key_Up
+    btfsc SaveReg,2
+    goto Key_Right
+    btfsc SaveReg,3
+    goto Key_Down
+    btfsc SaveReg,4
+    goto Key_Enter
+    return
 
+ParseKey1
+    rrf PORTB,W
+    xorlw 0x7f
+    btfsc _Z
+    return 
+    movwf SaveReg
+waitK1
+    rrf PORTB,W
+    xorlw 0xff
+    btfss _Z
+    goto waitK      ; wait for key depress
+
+    btfsc SaveReg,0
+    goto Key_Left
+    btfsc SaveReg,1
+    goto Key_Up
+    btfsc SaveReg,2
+    goto Key_Right
+    btfsc SaveReg,3
+    goto Key_Down
+    btfsc SaveReg,4
+    goto Key_Enter
+    return
 
 ;******************************************************
 
@@ -621,18 +544,18 @@ waitK1
 ;      movlw 3
 ;      call OutText  ; CAN Error
 ;      SPI_Read EFLG
-;      call LCDval08 
+;      call LCDval08
 
     ; Clear interrupt flag
-;     bL2bV 0xA0, b2510RegMask 
+;     bL2bV 0xA0, b2510RegMask
 ;     bL2bV 0x00, b2510RegData
 ;     movlw CANINTF
-;     call BitMod2510 
+;     call BitMod2510
 
-;     bL2bV 0xC0, b2510RegMask 
+;     bL2bV 0xC0, b2510RegMask
 ;     bL2bV 0x00, b2510RegData
 ;     movlw EFLG
-;     call BitMod2510 
+;     call BitMod2510
  ;    return
 ;****************************************
 
@@ -648,7 +571,7 @@ waitK1
 ;     SPI_WriteL TXB0SIDH, 0x07  ; message ID
 ;     SPI_WriteL TXB0SIDL, 0xdf     ; Send message - lower bits 0
 ;     SPI_WriteL TXB0DLC, 0x08      ; n data bytes
-     
+
     ; Send least significante byte first
 ;     SPI_WriteL TXB0D0, 0x01  ; SID $01
 ;     SPI_WriteL TXB0D1, 0x00  ; PID $00
@@ -659,27 +582,20 @@ waitK1
 
 ;*******************************************************
 
-
-
 ParseCAN
-      SPI_Read CANINTF
-   
- 
-   
+     SPI_Read CANINTF
      movlw 2
      call LCDcomd
      movlw 3
-     call LCDText 
+     call LCDText
 ;      LCD_Text 2, "CAN OK"
-    
+
       movfw iRecID_H
       movwf HI
-      movfw iRecID_L 
+      movfw iRecID_L
       movwf LO
       call LCDval16
-  
-    
-       bcf tbRxMsgPend 
+      bcf tbRxMsgPend
    
      ; Clear interrupt flag
      bL2bV 0x03, b2510RegMask 
@@ -687,10 +603,7 @@ ParseCAN
      movlw CANINTF
      call BitMod2510 
      return
- 
 
- 
- 
 ;***************ID TABLE******************************
 
     ; Functional addr 11 bits 0x07DF
@@ -698,20 +611,18 @@ ParseCAN
 
 ;*********************************************
 ; Inicio de sessão
-;   SID $01   Request current powertrain diagnostic data 
+;   SID $01   Request current powertrain diagnostic data
 ;   PID $00   Suported PIDs
 
-;   0x07 0x01 0x00 0x0 0x0 0x0 0x0 0x0   
+;   0x07 0x01 0x00 0x0 0x0 0x0 0x0 0x0
 
 Init
      clrwdt
      BANK1
      clrf PIE1_P
-     
 
      movlw b'00000110'
      movwf ADCON1        ; Set PORTA Digital I/O
-
 
   ; TRM0 config 
      movlw b'00000101'       ; configure Timer0
@@ -721,7 +632,7 @@ Init
            ; --------       TMR0 source edge of RA4/INT
            ; ----0---       prescaler assigned to Timer0 (PSA = 0)
            ; -----101       prescale = 1:64 (PS = 101)
-                          ; TMR0 0.27127 * 64 = 17.361 
+                          ; TMR0 0.27127 * 64 = 17.361
      movwf OPTION_REG
 
    ; Clear BANK0
@@ -730,7 +641,7 @@ Init
 jInitClr1
      clrf INDF
      incf FSR,F
-     jmpClr FSR,7, jInitClr1        
+     jmpClr FSR,7, jInitClr1
 
    ; Clear BANK1
      movlw 0xA0
@@ -738,7 +649,7 @@ jInitClr1
 jInitClr2
      clrf INDF
      incf FSR,F
-     jmpClr FSR,7, jInitClr2        
+     jmpClr FSR,7, jInitClr2
 
      call InitIO
 
@@ -767,14 +678,14 @@ InitIO
      bsf PORTC,2
 
      BANK1
-     
+
      ; PORTA
-     ;      0     display d4       
-     ;      1     display d5       
-     ;      2     display d6       
-     ;      3     display d7       
-     ;      4     display en       
-     ;      5     display rs  
+     ;      0     display d4
+     ;      1     display d5
+     ;      2     display d6
+     ;      3     display d7
+     ;      4     display en
+     ;      5     display rs
      clrf TRISA     
 
      ; PORTB
@@ -782,38 +693,28 @@ InitIO
      ;       1 in key left
      ;       2 in key enter
      ;       3 in key right
-     ;       4 in key down 
-     ;       5 in key up 
+     ;       4 in key down
+     ;       5 in key up
      ;       6 -
      ;       7 -
      movlw b'11111111'
      movwf TRISB
-   
+
      ; PORTC
-     ;      0   
-     ;      1     
-     ;      2   out CS  
-     ;      3   out SPI clock - master 
+     ;      0
+     ;      1
+     ;      2   out CS
+     ;      3   out SPI clock - master
      ;      4   in SPI data - SO
      ;      5   out SPI data out - SI
-     ;      6   
-     ;      7    
+     ;      6
+     ;      7
      movlw b'11010010'
      movwf TRISC
      BANK0
      return
 
-
-
 ;**************************************************
-
-
-
-
-
-
-
-
 
 WaitMSec
      movwf bCnt
@@ -823,20 +724,13 @@ jWaitMSec0
 jWaitMSec1
      jmp1HNotYet bGenClk,jWaitMSec1
      decfsz bCnt,F
-     goto jWaitMSec0     
+     goto jWaitMSec0
      return
-
-
-
 
 ;****************************************************
 
-
-   
     org 0x300
 
- 
-     
 GetSRegAddr:
     addwf PCL,F
     retlw reg0-reg0
@@ -859,9 +753,6 @@ GetSRegAddr:
     retlw reg17-reg0
  ;  retlw reg18-reg0
  ;  retlw reg19-reg0
-  
-
-
 
 GetStrAddr:
     addwf PCL,F
@@ -876,48 +767,43 @@ GetStrAddr:
     retlw Str8-Str0
     retlw Str9-Str0
 
-
 Strings
     addwf PCL, F
 Str0: dt " O B D II",0x00
-Str1: dt "Not compatible",0x00  
-Str2: dt "CAN    bits/    Kbps",0x00 
-Str3: dt "Msg ID ",0x00 
-Str4: dt " Normal mode",0x00     
-Str5: dt " Sleep mode",0x00     
-Str6: dt "LoopBack mode",0x00     
-Str7: dt " Listen mode",0x00     
-Str8: dt " Config mode",0x00  
-Str9: dt "  Diagnostics   ",0x00   
+Str1: dt "Not compatible",0x00
+Str2: dt "CAN    bits/    Kbps",0x00
+Str3: dt "Msg ID ",0x00
+Str4: dt " Normal mode",0x00
+Str5: dt " Sleep mode",0x00
+Str6: dt "LoopBack mode",0x00
+Str7: dt " Listen mode",0x00
+Str8: dt " Config mode",0x00
+Str9: dt "  Diagnostics   ",0x00
 
-
-       
    org 0x400
 
 RegNames
     addwf PCL, F
 reg0:  dt "CANSTAT    0x",0x00
 reg1:  dt "CANCTRL    0x",0x00
-;reg2:  dt "TEC        0x",0x00 
+;reg2:  dt "TEC        0x",0x00
 ;reg3:  dt "REC        0x",0x00
-reg2:  dt "CNF3       0x",0x00      
+reg2:  dt "CNF3       0x",0x00
 reg3:  dt "CNF2       0x",0x00
 reg4:  dt "CNF1       0x",0x00
 reg5:  dt "CANINTE    0x",0x00
 reg6:  dt "CANINTF    0x",0x00
 reg7:  dt "EFLG       0x",0x00
 reg8: dt "TXB0CTRL   0x",0x00
- reg9: dt "TXB0SIDH   0x",0x00
- reg10: dt "TXB0SIDL   0x",0x00
+reg9: dt "TXB0SIDH   0x",0x00
+reg10: dt "TXB0SIDL   0x",0x00
 reg11: dt "RXB0CTRL   0x",0x00
 reg12: dt "RXB0SIDH   0x",0x00
 reg13: dt "RXB0SIDL   0x",0x00
 reg14: dt "RXB0EID8   0x",0x00
 reg15: dt "RXB0EID0   0x",0x00
-reg16: dt "TXB0DLC    0x",0x00 
+reg16: dt "TXB0DLC    0x",0x00
 reg17: dt "TXB0DM     0x",0x00
-
-
 
 ;******************************************
 
@@ -926,20 +812,19 @@ jSendFrame
      bL2bV   0x08, b2510RegMask
      movlw TXB0CTRL
      call WaitANDeqZ
-    
+
     SPI_WriteL TXB0CTRL, 0x0B 
     SPI_Rts RTS0       ; Transmit buffer 0
     return
 
 ;********************************************
 
-
 ;     SyncSeg = 1TQ
 ;     PropSeg = 1->8TQ
 ;     PS1     = 1->8TQ
 ;     PS2     = 2->8TQ
 
-Init1      
+Init1
    call Reset2510
   ; wait 128 cicles
     movlw 0xff
@@ -948,48 +833,44 @@ Init1
     btfss baudrate_flag
     goto jlow 
     ; 500Khz
-    SPI_WriteL CNF1, 0x41   ;   
-    SPI_WriteL CNF2, 0xBA   ;
-    SPI_WriteL CNF3, 0x06   ;
+    SPI_WriteL CNF1, 0x41
+    SPI_WriteL CNF2, 0xBA
+    SPI_WriteL CNF3, 0x06
     goto brdone
 jlow
     ; 250Khz
-    SPI_WriteL CNF1, 0x42   ;   
-    SPI_WriteL CNF2, 0xBA   ;
-    SPI_WriteL CNF3, 0x06   ;
+    SPI_WriteL CNF1, 0x42
+    SPI_WriteL CNF2, 0xBA
+    SPI_WriteL CNF3, 0x06
 brdone
     SPI_WriteL CANINTE,0x00
-    SPI_WriteL CANINTF,0x00 
-    SPI_WriteL TXB0CTRL,0x00  
-    SPI_WriteL TXB1CTRL,0x00  
-    SPI_WriteL TXB2CTRL,0x00  
+    SPI_WriteL CANINTF,0x00
+    SPI_WriteL TXB0CTRL,0x00
+    SPI_WriteL TXB1CTRL,0x00
+    SPI_WriteL TXB2CTRL,0x00
     SPI_WriteL RXB0CTRL,0x60 ;  turn Mask/Filter OFF | Roll Over ON
- 
+
     btfss frametype_flag
     call CfgSTDMask
     btfsc frametype_flag
     call CfgExMask
 
-    bL2bV 0x1F, b2510RegMask  
+    bL2bV 0x1F, b2510RegMask
     bL2bV 0x00, b2510RegData
     movlw CANCTRL
     call BitMod2510
 
 ;    movlw 0x00      ; NORMAL_MODE
  ;   call Set2510Mode
-    call SetLoopBackMode 
+    call SetLoopBackMode
 
-   
 jCANFrameData
      ; Set to DataFrame|SzFrame
      SPI_WriteL TXB0DLC, 0x02    ; data frame | n data bytes
-     
+
     ; Send least significante byte first
      SPI_WriteL TXB0D0, 0x01  ; SID $01
      SPI_WriteL TXB0D1, 0x00  ; PID $00
- 
-
-     
     return
 
 ;**************************************************
@@ -1004,9 +885,9 @@ CfgFunc
 
      SPI_Read CANSTAT
      movwf cdata
-     swapf cdata 
-     bcf _C   
-     rrf  cdata,F 
+     swapf cdata
+     bcf _C
+     rrf  cdata,F
      movfw cdata
      addlw 4
      call LCDText
@@ -1027,8 +908,8 @@ Refresh
      movwf PCLATH
      movfw cIdx
      call getRegAddr
-     call Rd2510Reg  
-     movwf cdata   
+     call Rd2510Reg
+     movwf cdata
      call LCD_Hex
      return
 
@@ -1045,8 +926,8 @@ getRegAddr
      retlw 0x2C   ; CANINTF
      retlw 0x2D  ; EFLG
      retlw 0x30  ; TXB0CTRL
-      retlw 0x31  ; TXB0SIDH
-      retlw 0x32  ; TXB0SIDL
+     retlw 0x31  ; TXB0SIDH
+     retlw 0x32  ; TXB0SIDL
      retlw 0x60  ; RXB0CTRL
      retlw 0x61  ; RXB0SIDH
      retlw 0x62  ; RXB0SIDL
@@ -1054,19 +935,15 @@ getRegAddr
      retlw 0x64  ; RXB0EID0
      retlw 0x35  ; TXD0DLC
      retlw 0x36  ; TXB0DM
-     
 
 ;******************************************************************************
-
-
-
 
 Key_Left
      btfss data_nibble
      goto AdjRew
      bcf data_nibble
      movlw LCDL3+13
-     call LCDcomd        
+     call LCDcomd
      return
 AdjRew
      btfss menu_stage
@@ -1082,7 +959,7 @@ normal_func
      call LCDcomd
     ; set normal mode
 ;     movlw 0x00
-;      call Set2510Mode 
+;      call Set2510Mode
      movlw 0
      call LCDText 
 ;     LCD_Text 1,"      O B D II"
@@ -1092,7 +969,6 @@ normal_func
      bsf CanType,1    ; default 500Khz
      goto jSendFrame
      return
-          
 
 Key_Right
      btfsc menu_stage
@@ -1100,17 +976,16 @@ Key_Right
      bsf  menu_stage
      movlw LCDL3+13
      call LCDcomd
-      movlw 0x0f
-      call LCDcomd
+     movlw 0x0f
+     call LCDcomd
      return
 AdjFw
      btfsc data_nibble
      return
      bsf data_nibble
      movlw LCDL3+14
-     call LCDcomd        
+     call LCDcomd
      return
-
 
 Key_Down
      btfsc menu_stage
@@ -1129,19 +1004,18 @@ wrmode3
      btfss data_nibble
      swapf cdata,W
      andlw 0x0f
-     call getCH    
+     call getCH
      call LCDdata
      movlw LCDL3+13
      btfsc data_nibble
      movlw LCDL3+14
-     call LCDcomd        
+     call LCDcomd
      return
-
 
 Key_Up
      btfsc menu_stage
      goto wrmode4
-     movfw  cIdx    
+     movfw  cIdx
      sublw 16
      btfss _C
      return
@@ -1156,15 +1030,13 @@ wrmode4
      btfss data_nibble
      swapf cdata,W
      andlw 0x0f
-     call getCH    
-     call LCDdata     
+     call getCH
+     call LCDdata
      movlw LCDL3+13
      btfsc data_nibble
      movlw LCDL3+14
-     call LCDcomd        
-     
+     call LCDcomd
      return
-
 
 Key_Enter
      btfss menu_stage
@@ -1179,17 +1051,14 @@ Key_Enter
      movlw high Wrt2510Reg
      movwf PCLATH
      movfw b2510RegAdr
-     call Wrt2510Reg 
-      movlw LCDCONT
-      call LCDcomd
+     call Wrt2510Reg
+     movlw LCDCONT
+     call LCDcomd
      bcf data_nibble
      bcf menu_stage
      return
 
-
 ;*******************************************************
-
-
 
 CfgSTDMask
 
@@ -1198,12 +1067,10 @@ CfgSTDMask
 
     SPI_WriteL RXF0SIDH, 0xFF
     SPI_WriteL RXF0SIDL, 0xFF
-    
+
     SPI_WriteL TXB0SIDH, 0xFB  ; message ID
-     SPI_WriteL TXB0SIDL, 0xE0  ;                      
+    SPI_WriteL TXB0SIDL, 0xE0
     return
-
-
 
 ;***********************************************
 
@@ -1221,18 +1088,14 @@ CfgExMask
     SPI_WriteL RXM0SIDH, 0xFF
     SPI_WriteL RXM0SIDL, 0xFF
 
- 
      SPI_WriteL TXB0SIDL, 0x2B  ; message ID
-     SPI_WriteL TXB0SIDH, 0x7E  ; SID|ExFrame|ExID 
+     SPI_WriteL TXB0SIDH, 0x7E  ; SID|ExFrame|ExID
      SPI_WriteL TXB0EID0, 0x66  ; message ExID
-     SPI_WriteL TXB0EID8, 0x1B  ;  
+     SPI_WriteL TXB0EID8, 0x1B
 
     return
 
-
-
 ;***********************************************
-
 
 ;Init2510 
 
@@ -1245,16 +1108,13 @@ CfgExMask
 ;    movlw 0xff
 ;    call delay_ms
 
-;    bL2bV 0x1C, b2510RegMask  
+;    bL2bV 0x1C, b2510RegMask
 ;    bL2bV 0x08, b2510RegData
 ;    movlw CANCTRL
 ;    call BitMod2510
 
-  
-     
-
     ; set MCP2515 interrupts
-    ;  0-------    Error on TX/RX message  
+    ;  0-------    Error on TX/RX message
     ;  -0------    CAN bus activity
     ;  --0-----    Interrupt on EFLAG reg
     ;  ---0----    TXB2 empty
@@ -1262,17 +1122,15 @@ CfgExMask
     ;  -------1    Messsage received on RXB0
 
 ;   SPI_WriteL CANINTE,0x00
-  
 
 ;    btfss CanType,0
 ;    call  CfgSTDMask
 ;    btfsc CanType,0
 ;    call  CfgExMask
- 
 
     ; x00-----  receive all valid message using filter criteria
     ; x----000  accept filter 0
- ;;   SPI_Write RXB1CTRL, 0x00 
+ ;;   SPI_Write RXB1CTRL, 0x00
 
 ;    btfss CanType,1
 ;    goto LowBRP
@@ -1285,41 +1143,38 @@ CfgExMask
     ; Prop Seg   = 2TQ
     ; Phase Seg1 = 10TQ
     ; Phase Seg2 = 3TQ
-    ;
+
     ; TQ = 2 * (1/Fosc) * (BRP+1)
-    ;
-  
 
     ; Hi_BRP 500Kb/s
     ;  BRP=1
     ; Sync Seg = 1TQ 0x00
-;    SPI_WriteL CNF1, 0x01   ;   set BRP 
+;    SPI_WriteL CNF1, 0x01   ;   set BRP
     ; BTLMODE_CNF3   0x80
     ; SMPL_1X        0x40
     ; PHSEG1 = 10QT  0x10
     ; PropSeg = 2QT  0x0A
-;    SPI_WriteL CNF2, 0xDA   ;
+;    SPI_WriteL CNF2, 0xDA
     ; SOF = 0 - WAKFIL = 0 - PHSEG2 = 2QT
-;    SPI_WriteL CNF3, 0x03   ;
- 
+;    SPI_WriteL CNF3, 0x03
+
 ;    goto CfgBRPDone
 ;LowBRP
     ; Low_BRP 250Kb/s
- 
+
     ;  16TQ
     ; Fosc       = 16Mhz : 500Kbits/s
-    ; SJW=0 - BRP=2 
+    ; SJW=0 - BRP=2
     ; Sync Seg   = 1TQ
     ; Prop Seg   = 2TQ
     ; Phase Seg1 = 10TQ
     ; Phase Seg2 = 3TQ
-;   SPI_WriteL CNF1, 0x01   ;   
-;    SPI_WriteL CNF2, 0xF2   ;
-;    SPI_WriteL CNF3, 0x03   ;
+;   SPI_WriteL CNF1, 0x01
+;    SPI_WriteL CNF2, 0xF2
+;    SPI_WriteL CNF3, 0x03
 
+    ; Config RX registers
 
-    ; Config RX registers  
-   
     ; x00x----  RXM   turn on mask/filter
     ; x--x-1--  BUKT  RXB0 msg roll over
 
@@ -1330,7 +1185,6 @@ CfgExMask
 ;     movlw TXB0CTRL
 ;     call BitMod2510
 
- 
     ;    125Kb/s
     ; BaundRate=Fxtal/(2*(BPR+1)*(3+TSEG1+TSEG2))
 
@@ -1341,7 +1195,7 @@ CfgExMask
    ;  call SetListenMode
 ;       movlw 0x80
 ;      call delay_ms
-    
+
   ; InitializeOBD2 by detecting Baud rate
 
      ; Wait for pending message to be sent
@@ -1350,27 +1204,21 @@ CfgExMask
 ;     movlw TXB0CTRL
 ;     call WaitANDeqZ
 
-     ; Send CAN frame  
+     ; Send CAN frame
 
 ;      btfsc CanType,0
 ;     goto jExCANFrame
-     
-  
 
      ; Send CAN Standard frame
      ; Functional addr   0x7DF
-     ; Physical request ECU1 addr  0x7E0 
-     ; Physical respond ECU1 addr  0x7E8  
+     ; Physical request ECU1 addr  0x7E0
+     ; Physical respond ECU1 addr  0x7E8
 
-     
-    
 ;     SPI_WriteL TXB0SIDH, 0xFB  ; message ID
-;     SPI_WriteL TXB0SIDL, 0xE0  ;                      
+;     SPI_WriteL TXB0SIDL, 0xE0
 ;     goto jCANFrameData
 
 ;jExCANFrame
-    
- 
 
      ; Send CAN Extended frame 
      ; Functional addr 0x 18 DB 33 F1
@@ -1378,44 +1226,42 @@ CfgExMask
      ; Physical respond addr 0x 18 DA F1 xx ( ECU#xx )
 
 ;     SPI_WriteL TXB0SIDL, 0x2B  ; message ID
-;     SPI_WriteL TXB0SIDH, 0x7E  ; SID|ExFrame|ExID 
+;     SPI_WriteL TXB0SIDH, 0x7E  ; SID|ExFrame|ExID
 ;     SPI_WriteL TXB0EID0, 0x66  ; message ExID
-;     SPI_WriteL TXB0EID8, 0x1B  ;  
+;     SPI_WriteL TXB0EID8, 0x1B
 ;jCANFrameData
      ; Set to RemoteFrame|SzFrame
 ;     SPI_WriteL TXB0DLC, 0x42      ; n data bytes
-     
+
     ; Send least significante byte first
 ;     SPI_WriteL TXB0D0, 0x01  ; SID $01
 ;     SPI_WriteL TXB0D1, 0x00  ; PID $00
- 
-     
-;    SPI_Rts RTS0       ; Transmit buffer 0
 
+;    SPI_Rts RTS0       ; Transmit buffer 0
 
  ;     Set1HClock bGenClk,200   ; 0xc8 Wait 56ms for response
  ;     bsf T1CON,TMR1ON 
-    
+
 ;jWaitAnswer
 ;      SPI_Read TXB0CTRL
 ;      andlw 0x70
-;      btfss _Z     
+;      btfss _Z
 ;      goto tx_err
 ;      movfw TMR1L
 ;      subwf bGenClk,W
-;  	  btfsc   _C ;
+;  	  btfsc   _C
 ;	  goto   jWaitAnswer
 ;      goto pass2
-;tx_err  
-;    bsf ertx_flag     
+;tx_err
+;    bsf ertx_flag
 ;    bL2bV 0x08,b2510RegMask
 ;    bL2bV 0x00, b2510RegData
 ;    movlw TXB0CTRL
-;    call BitMod2510 
+;    call BitMod2510
 ;pass2
 ;      clrf TMR1H
 ;      clrf TMR1L
-;      bcf T1CON,TMR1ON 
+;      bcf T1CON,TMR1ON
 
 ;     SPI_Read CANINTF
 ;     movwf SaveReg   ; save reg
@@ -1424,7 +1270,7 @@ CfgExMask
 ;     SPI_WriteL CANINTF,0x00
    
 ;     btfsc ertx_flag
-;     goto  jCfgBRP  
+;     goto  jCfgBRP
      ; No errors; Check Msg
 ;     movfw SaveReg
 ;     andlw 0x03
@@ -1433,41 +1279,30 @@ CfgExMask
 ;     movfw CanType
 ;     andlw 0x01
 ;     btfss _Z
-;     retlw 0x01      ; return no compatible 
+;     retlw 0x01      ; return no compatible
 ;     movlw 0x01
 ;     iorwf CanType
 ;     goto jSendFrame
-
 
 ;jCfgBRP
 ;    btfss CanType,1
 ;    retlw  0x01   ; não compativel
 
-    ; Clear error flag on CANINTF   
+    ; Clear error flag on CANINTF
 ;    bL2bV 0xA0,b2510RegMask
 ;    bL2bV 0x00, b2510RegData
 ;    movlw CANINTF
 ;    call BitMod2510
-  
 
 ;    call SetConfigMode
 ;    movlw 0x80
 ;    call delay_ms
 ;    goto LowBRP
-    
 
 ;******************************************
 
- 
-
-
-;**********************************************
-
-
-
-
 LCD_RegString
- 
+
     movwf STR_NUM
    movlw high GetSRegAddr
    movwf PCLATH
@@ -1483,21 +1318,16 @@ next
     addlw d'0'
     btfsc STATUS,Z
     goto done
-  
     call LCDdata
     incf INDEX, F
-
     goto next
 done
-
     return
 
 ;*****************************************************
 
-
 LCDText
- 
-    movwf STR_NUM
+   movwf STR_NUM
    movlw high GetStrAddr
    movwf PCLATH
    movf STR_NUM,W
@@ -1505,19 +1335,18 @@ LCDText
    movwf INDEX
    movlw high Strings
    movwf PCLATH
-next1 
+next1
     movf INDEX,W
     call Strings
     addlw d'0'
     btfsc STATUS,Z
     goto done1
-  
+
     call LCDdata
     incf INDEX, F
 
     goto next1
 done1
-
     return
 
 ;*****************************************************
@@ -1537,7 +1366,6 @@ LCD_Hex
     call LCDdata
     return
 
-
 getCH
      addwf PCL,F
      retlw '0'
@@ -1556,7 +1384,6 @@ getCH
      retlw 'D'
      retlw 'E'
      retlw 'F'
-    
 
 _Hex08
      clrf TEMP1
@@ -1569,7 +1396,7 @@ _V08_H
      movfw TEMP2
      subwf LO_TEMP,F
      bsf BCflag
-     goto _V08_H    
+     goto _V08_H
 _VH8_LCD
 
      movlw high getCH
@@ -1578,13 +1405,10 @@ _VH8_LCD
      call getCH
      return
 
-
 ;*****************************************************
 
-
-
 LCDval08
- 
+
 	movwf	LO
 	movwf	LO_TEMP		; LO -> LO_TEMP
 	bcf	BCflag		; blank checker for preceeding zeros
@@ -1604,12 +1428,10 @@ LCDval08
 	bsf	BCflag		; remove blank checker in case of zero
 	call	_VALcnv08	; call conversion sub-routine
 	LCDw			; call LCD sub-routine with value stored in w
- 
+
 	RETURN
- 
 
 ;*****************************************************
-
 
 LCDval16
  
@@ -1651,16 +1473,13 @@ LCDval16
 	bsf	BCflag		; remove blank checker in case of zero
 	call	_VALcnv16	; call conversion sub-routine
 	LCDw			; call LCD sub-routine with value stored in w
- 
-	RETURN
 
+	RETURN
 
 ;*****************************************************
 
-
 LCDval32
- 
- 
+
    bcf BCflag
    movlw 0x80
    movwf TEMP2
@@ -1737,15 +1556,10 @@ LCDval32
  ;  clrf TEMP5
  ;  call _Valcnv32
  ;  call LCDdata
- 
+
    return
 
-
 ;************************************************************************
-
-
-    
-
 
 _VALcnv08
 	clrf	TEMP1		; counter
@@ -1766,9 +1580,7 @@ _V08_LCD
 	; return with data in w
 	RETURN
 
-
 ;*****************************************************
-
 
 _VALcnv16
 	clrf	TEMP1		; clear counter
@@ -1800,8 +1612,6 @@ _V16_LCD
 	RETURN
 
 ;********************************************************************
-
-
 
 _Valcnv32
    clrf TEMP1
@@ -1853,15 +1663,6 @@ _V32_LCD
    movlw ' '
    return
 
-
-;*********************************************************************************************
-
-
-
-;--------------------------------------------------------------------------
-
- 
-
 ;***** SUBROUTINES *****
 
 	; transmit only lower nibble of w
@@ -1875,11 +1676,7 @@ LCDxmit	movwf	LCDbuf		; store command/data nibble
 	iorwf	LCDport,f	; put to LCD data lines
 	RETURN
 
-;***************************************************
-
-
 ;*****************************************************
-
 
 	; clocks LCD data/command
 LCDclk	;WAIT	LCDWAIT
@@ -1898,9 +1695,7 @@ CNT_V -= 1		; decrement
 	WAIT	LCDWAIT		; clocks LCD data/command
 	RETURN
 
-
 ;*****************************************************
-
 
 	; transmit command to LCD
 LCDcomd
@@ -1974,11 +1769,7 @@ LCDinit
 	ENDIF
     return
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 delay_ms            ; W*1ms  at 4MHz
     movwf delay_mult
@@ -1998,94 +1789,58 @@ del_2u
     goto del_20m
     return
 
-
-;*****************************************
-
-
 ;**********************************************************************************************
 
- 
- 
- 
-
-
- 
-
-
-;****************************************************
-
-
-
       cblock 0x30
-       
-bIntSaveSt       
-bIntSaveFSR            
-bIntSavePCLATH    
- 
 
+bIntSaveSt
+bIntSaveFSR
+bIntSavePCLATH
 
-
-delay_mult   
-delay_k50    
-delay_k200    
-
- 
+delay_mult
+delay_k50
+delay_k200
 
 bGenFlags1       ; general control flags 1
 bCnt            ; work byte conter
 
 ; Timer1
-iTimer1:2       
-bGenClk       
-bXmitClk     
+iTimer1:2
+bGenClk
+bXmitClk
 
 iA2DValue:2
 bRegAddr
-bRegData 
+bRegData
  
 
 iRecID_L         ; ID of receiver message( 3 bits left justified)
-iRecID_H        ; ID of receiver message( 8 bits left justified) 
+iRecID_H        ; ID of receiver message( 8 bits left justified)
 iRecEX_H
 iRecEX_L
 bRecCount        ; number of bytes received
-pRecDataBase:8  
- 
- 
+pRecDataBase:8
 
    ;; Low level SPI interface
 b2510RegAdr     ; 0x50
-b2510RegData   
-b2510RegMask   
+b2510RegData
+b2510RegMask
 
    ;; used in interrupt
 bSPICnt        ; # bytes remaining to receive
 pSPIBuf         ; Pointer into buffer
 pSPIBufBase:16        ; 0x55 Base of SPI receive/xmit buffer
 
- 
 CanType        ;  0x65
 IntCAN_Err
 SaveReg
 cdata
 cbit
 cIdx
-  
+
  endc
 
 bIntSaveW0 equ 0x7F
 bIntSaveW1 equ 0xFF 
 
-
-
-         
- 
      END
-
-
-   
-
-
-
-
-
